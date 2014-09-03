@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.conf.urls import patterns, include, url
+from django.views.generic.base import RedirectView
 from ratelimitbackend import admin
 from django.conf.urls.static import static
 
@@ -109,7 +110,7 @@ urlpatterns += (
 
 # Favicon
 favicon_path = microsite.get_value('favicon_path', settings.FAVICON_PATH)
-urlpatterns += (url(r'^favicon\.ico$', 'django.views.generic.base.RedirectView', {'url': settings.STATIC_URL + favicon_path}),)
+urlpatterns += (url(r'^favicon\.ico$', RedirectView.as_view(url=settings.STATIC_URL + favicon_path)),)
 
 # Semi-static views only used by edX, not by themes
 if not settings.FEATURES["USE_CUSTOM_THEME"]:
