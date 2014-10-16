@@ -370,3 +370,63 @@ def add_user_to_cohort(cohort, username_or_email):
     )
     cohort.users.add(user)
     return (user, previous_cohort_name)
+
+
+def is_user_in_cohort(cohort, user_id, group_type=CourseUserGroup.COHORT):
+    """
+    Returns True or False if a user is in a cohort
+    """
+    return CourseUserGroup.objects.filter(
+        course_id=cohort.course_id,
+        users__id=user_id,
+        group_type=group_type).exists()
+
+
+def remove_user_from_cohort(cohort, username_or_email):
+    """
+    Look up the given user, and if successful, remove them to the specified cohort.
+
+    Arguments:
+        cohort: CourseUserGroup
+        username_or_email: string.  Treated as email if has '@'
+
+    Returns:
+        User object that has been removed from the cohort
+
+    Raises:
+        User.DoesNotExist if can't find user.
+
+        ValueError if user is not in this cohort.
+    """
+
+    user = get_user_by_username_or_email(username_or_email)
+
+    course_cohorts = CourseUserGroup.objects.filter(
+        course_id=cohort.course_id,
+        users__id=user.id,
+        group_type=CourseUserGroup.COHORT,
+    )
+    if course_cohorts.exists():
+        cohort.users.remove(user)
+
+    return user
+
+
+def get_course_cohort_names(course_key):
+    """
+    Return a list of the cohort names in a course.
+    """
+    return [c.name for c in get_course_cohorts(course_key)]
+
+
+def delete_empty_cohort(course_key, name):
+    """
+    Remove an empty cohort.  Raise ValueError if cohort is not empty.
+    """
+    cohort = get_cohort_by_name(course_key, name)
+    if cohort.users.exists():
+        raise ValueError(
+            "Can't delete non-empty cohort {0} in course {1}".format(
+                name, course_key))
+
+    cohort.delete()

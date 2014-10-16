@@ -114,12 +114,25 @@ class User(models.Model):
         )
         return response.get('collection', []), response.get('page', 1), response.get('num_pages', 1)
 
+    def social_stats(self):
+        if not self.course_id:
+            raise CommentClientRequestError("Must provide course_id when retrieving social stats for the user")
+
+        url = _url_for_user_social_stats(self.id)
+        params = {'course_id': self.course_id}
+        response = perform_request(
+            'get',
+            url,
+            params
+        )
+        return response
+
     def _retrieve(self, *args, **kwargs):
         url = self.url(action='get', params=self.attributes)
         retrieve_params = self.default_retrieve_params.copy()
         retrieve_params.update(kwargs)
         if self.attributes.get('course_id'):
-            retrieve_params['course_id'] = self.course_id.to_deprecated_string()
+            retrieve_params['course_id'] = unicode(self.course_id)
         try:
             response = perform_request(
                 'get',
@@ -145,6 +158,20 @@ class User(models.Model):
         self._update_from_response(response)
 
 
+def get_course_social_stats(course_id):
+    """
+    Helper method to get the social stats from the comment service
+    """
+    url = _url_for_course_social_stats()
+    params = {'course_id': course_id}
+    response = perform_request(
+        'get',
+        url,
+        params
+    )
+    return response
+
+
 def _url_for_vote_comment(comment_id):
     return "{prefix}/comments/{comment_id}/votes".format(prefix=settings.PREFIX, comment_id=comment_id)
 
@@ -165,3 +192,13 @@ def _url_for_user_subscribed_threads(user_id):
     return "{prefix}/users/{user_id}/subscribed_threads".format(prefix=settings.PREFIX, user_id=user_id)
 
 
+def _url_for_user_stats(user_id,course_id):
+    return "{prefix}/users/{user_id}/stats?course_id={course_id}".format(prefix=settings.PREFIX, user_id=user_id,course_id=course_id)
+
+
+def _url_for_user_social_stats(user_id):
+    return "{prefix}/users/{user_id}/social_stats".format(prefix=settings.PREFIX, user_id=user_id)
+
+
+def _url_for_course_social_stats():
+    return "{prefix}/users/*/social_stats".format(prefix=settings.PREFIX)
