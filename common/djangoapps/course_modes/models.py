@@ -183,6 +183,39 @@ class CourseMode(models.Model):
         return False
 
     @classmethod
+    def can_auto_enroll(cls, course_id):
+        """Check whether students should be auto-enrolled in the course.
+
+        If a course is behind a paywall (e.g. professional ed or white-label),
+        then users should NOT be auto-enrolled.  Instead, the user will
+        be enrolled when he/she completes the payment flow.
+
+        Otherwise, users can be enrolled in the default mode "honor"
+        with the option to upgrade later.
+
+        Args:
+            course_id (CourseKey): The course to check.
+
+        Returns:
+            bool
+
+        """
+        modes = cls.modes_for_course_dict(course_id)
+
+        # Professional mode courses are always behind a paywall
+        if "professional" in modes:
+            return False
+
+        # White-label uses course mode honor with a price
+        # to indicate that the course is behind a paywall.
+        if "honor" in modes and len(modes) == 1:
+            if modes["honor"].min_price > 0 or modes["honor"].suggested_prices != '':
+                return False
+
+        # Check that the default mode is available.
+        return ("honor" in modes)
+
+    @classmethod
     def min_course_price_for_currency(cls, course_id, currency):
         """
         Returns the minimum price of the course in the appropriate currency over all the course's

@@ -15,7 +15,6 @@ from social.strategies.django_strategy import DjangoStrategy
 from django.test.client import RequestFactory
 from student.tests.factories import UserFactory, CourseModeFactory
 from student.models import CourseEnrollment
-from student.views import register_user
 from third_party_auth.pipeline import change_enrollment as change_enrollment_third_party
 
 # Since we don't need any XML course fixtures, use a modulestore configuration
@@ -59,7 +58,7 @@ class EnrollmentTest(ModuleStoreTestCase):
         # Professional ed
         # Expect that we're sent to the "choose your track" page
         # (which will, in turn, redirect us to a page where we can verify/pay)
-        # We should NOT be auto-enrolled, because that would be giving 
+        # We should NOT be auto-enrolled, because that would be giving
         # away an expensive course for free :)
         (['professional'], 'course_modes_choose', None),
     )
@@ -107,14 +106,15 @@ class EnrollmentTest(ModuleStoreTestCase):
         directly call the step in the third party pipeline that registers the user if
         `registration_course_id` is set in the session, but it should catch any major breaks.
         """
-        self.client.logout()
-        self.client.get(reverse('register_user'), {'course_id': self.course.id})
-        self.client.login(username=self.USERNAME, password=self.PASSWORD)
-        self.dummy_request = RequestFactory().request()
-        self.dummy_request.session = self.client.session
-        strategy = DjangoStrategy(RequestFactory, request=self.dummy_request)
-        change_enrollment_third_party(is_register=True, strategy=strategy, user=self.user)
-        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course.id))
+        self.fail("TODO")
+        # self.client.logout()
+        # self.client.get(reverse('register_user'), {'course_id': self.course.id})
+        # self.client.login(username=self.USERNAME, password=self.PASSWORD)
+        # self.dummy_request = RequestFactory().request()
+        # self.dummy_request.session = self.client.session
+        # strategy = DjangoStrategy(RequestFactory, request=self.dummy_request)
+        # change_enrollment_third_party(strategy, is_register=True, user=self.user)
+        # self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course.id))
 
     def test_unenroll(self):
         # Enroll the student in the course

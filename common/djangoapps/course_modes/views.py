@@ -26,10 +26,10 @@ class ChooseModeView(View):
 
     When a get request is used, shows the selection page.
 
-    When a post request is used, assumes that it is a form submission 
+    When a post request is used, assumes that it is a form submission
     from the selection page, parses the response, and then sends user
     to the next step in the flow.
-    
+
     """
 
     @method_decorator(login_required)
@@ -50,7 +50,7 @@ class ChooseModeView(View):
         """
         course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
         enrollment_mode, is_active = CourseEnrollment.enrollment_mode_for_user(request.user, course_key)
-        
+
         upgrade = request.GET.get('upgrade', False)
         request.session['attempting_upgrade'] = upgrade
 
@@ -77,14 +77,11 @@ class ChooseModeView(View):
                 )
             )
 
-        # If a user's course enrollment is inactive at this stage, the track
-        # selection page may have been visited directly, so we should redirect
-        # the user to their dashboard. By the time the user gets here during the
-        # normal registration process, they will already have an activated enrollment;
-        # the button appearing on the track selection page only redirects the user to
-        # the dashboard, and we don't want the user to be confused when they click the
-        # honor button and are taken to their dashboard without being enrolled.
-        if not is_active:
+        # If there isn't a verified mode available, then there's nothing
+        # to do on this page.  The user has almost certainly been auto-registered
+        # in the "honor" track by this point, so we send the user
+        # to the dashboard.
+        if not CourseMode.has_verified_mode(modes):
             return redirect(reverse('dashboard'))
 
         donation_for_course = request.session.get("donation_for_course", {})

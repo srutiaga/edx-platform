@@ -59,6 +59,7 @@ See http://psa.matiasaguirre.net/docs/pipeline.html for more docs.
 
 import random
 import string  # pylint: disable-msg=deprecated-module
+from collections import OrderedDict
 import analytics
 from eventtracking import tracker
 
@@ -70,7 +71,8 @@ from social.exceptions import AuthException
 from social.pipeline import partial
 
 from student.models import CourseEnrollment, CourseEnrollmentException
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from course_modes.models import CourseMode
+from opaque_keys.edx.keys import CourseKey
 
 from logging import getLogger
 
@@ -78,6 +80,7 @@ from . import provider
 
 
 AUTH_ENTRY_KEY = 'auth_entry'
+AUTH_REDIRECT_KEY = 'next'
 AUTH_ENTRY_DASHBOARD = 'dashboard'
 AUTH_ENTRY_LOGIN = 'login'
 AUTH_ENTRY_PROFILE = 'profile'
@@ -177,15 +180,26 @@ def _get_enabled_provider_by_name(provider_name):
     return enabled_provider
 
 
-def _get_url(view_name, backend_name, auth_entry=None):
+def _get_url(view_name, backend_name, auth_entry=None, redirect_url=None):
     """Creates a URL to hook into social auth endpoints."""
     kwargs = {'backend': backend_name}
     url = reverse(view_name, kwargs=kwargs)
 
+    query_params = OrderedDict()
     if auth_entry:
-        url += '?%s=%s' % (AUTH_ENTRY_KEY, auth_entry)
+        query_params[AUTH_ENTRY_KEY] = auth_entry
 
-    return url
+    if redirect_url:
+        query_params[AUTH_REDIRECT_KEY] = redirect_url
+
+    query_string = u"?{params}".format(
+        params=u"&".join([
+            u"{key}={val}".format(key=key, val=val)
+            for key, val in query_params.iteritems()
+        ])
+    )
+
+    return url + query_string
 
 
 def get_complete_url(backend_name):
@@ -226,7 +240,7 @@ def get_disconnect_url(provider_name):
     return _get_url('social:disconnect', enabled_provider.BACKEND_CLASS.name)
 
 
-def get_login_url(provider_name, auth_entry):
+def get_login_url(provider_name, auth_entry, redirect_url=None):
     """Gets the login URL for the endpoint that kicks off auth with a provider.
 
     Args:
@@ -236,6 +250,9 @@ def get_login_url(provider_name, auth_entry):
             for the auth pipeline. Used by the pipeline for later branching.
             Must be one of _AUTH_ENTRY_CHOICES.
 
+    Keyword Args:
+        redirect_url (string): TODO
+
     Returns:
         String. URL that starts the auth pipeline for a provider.
 
@@ -244,7 +261,12 @@ def get_login_url(provider_name, auth_entry):
     """
     assert auth_entry in _AUTH_ENTRY_CHOICES
     enabled_provider = _get_enabled_provider_by_name(provider_name)
-    return _get_url('social:begin', enabled_provider.BACKEND_CLASS.name, auth_entry=auth_entry)
+    return _get_url(
+        'social:begin',
+        enabled_provider.BACKEND_CLASS.name,
+        auth_entry=auth_entry,
+        redirect_url=redirect_url
+    )
 
 
 def get_duplicate_provider(messages):
@@ -413,21 +435,19 @@ def login_analytics(*args, **kwargs):
             }
         )
 
-#@partial.partial
-def change_enrollment(*args, **kwargs):
+@partial.partial
+def change_enrollment(strategy, user=None, *args, **kwargs):
     """
     If the user accessed the third party auth flow after trying to register for
     a course, we automatically log them into that course.
     """
-    if kwargs['strategy'].session_get('registration_course_id'):
-        try:
-            CourseEnrollment.enroll(
-                kwargs['user'],
-                SlashSeparatedCourseKey.from_deprecated_string(
-                    kwargs['strategy'].session_get('registration_course_id')
-                )
-            )
-        except CourseEnrollmentException:
-            pass
-        except Exception, e:
-            logger.exception(e)
+    course_id = strategy.session_get('registration_course_id')
+    if course_id:
+        course_id = CourseKey.from_string(course_id)
+        if CourseMode.can_auto_enroll(course_id):
+            try:
+                CourseEnrollment.enroll(user, course_id)
+            except CourseEnrollmentException:
+                pass
+            except Exception, e:
+                logger.exception(e)
