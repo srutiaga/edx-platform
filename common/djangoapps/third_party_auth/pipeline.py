@@ -60,6 +60,7 @@ See http://psa.matiasaguirre.net/docs/pipeline.html for more docs.
 import random
 import string  # pylint: disable-msg=deprecated-module
 from collections import OrderedDict
+import urllib
 import analytics
 from eventtracking import tracker
 
@@ -211,14 +212,10 @@ def _get_url(view_name, backend_name, auth_entry=None, redirect_url=None, enroll
     if enroll_course_id:
         query_params[AUTH_ENROLL_COURSE_ID_KEY] = enroll_course_id
 
-    query_string = u"?{params}".format(
-        params=u"&".join([
-            u"{key}={val}".format(key=key, val=val)
-            for key, val in query_params.iteritems()
-        ])
+    return u"{url}?{params}".format(
+        url=url,
+        params=urllib.urlencode(query_params)
     )
-
-    return url + query_string
 
 
 def get_complete_url(backend_name):
