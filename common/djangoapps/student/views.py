@@ -1051,14 +1051,12 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
             'username': username,
         })
 
-        # If the user entered the flow via a specific course page, we track that
-        registration_course_id = request.session.get('registration_course_id')
         analytics.track(
             user.id,
             "edx.bi.user.account.authenticated",
             {
                 'category': "conversion",
-                'label': registration_course_id,
+                'label': request.POST.get('course_id'),
                 'provider': None
             },
             context={
@@ -1067,7 +1065,6 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
                 }
             }
         )
-        request.session['registration_course_id'] = None
 
     if user is not None and user.is_active:
         try:
@@ -1534,13 +1531,12 @@ def create_account(request, post_override=None):  # pylint: disable-msg=too-many
             current_provider = provider.Registry.get_by_backend_name(running_pipeline.get('backend'))
             provider_name = current_provider.NAME
 
-        registration_course_id = request.session.get('registration_course_id')
         analytics.track(
             user.id,
             "edx.bi.user.account.registered",
             {
                 'category': 'conversion',
-                'label': registration_course_id,
+                'label': request.POST.get('course_id'),
                 'provider': provider_name
             },
             context={
@@ -1549,7 +1545,6 @@ def create_account(request, post_override=None):  # pylint: disable-msg=too-many
                 }
             }
         )
-        request.session['registration_course_id'] = None
 
     create_comments_service_user(user)
 
