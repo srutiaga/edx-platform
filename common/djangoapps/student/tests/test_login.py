@@ -1,6 +1,4 @@
-'''
-Tests for student activation and login
-'''
+"""Tests for student activation and login """
 import json
 import unittest
 from mock import patch
@@ -17,7 +15,6 @@ from student.views import _parse_course_id_from_string, _get_course_enrollment_d
 
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase, mixed_store_config
-from xmodule.modulestore.django import modulestore
 
 from external_auth.models import ExternalAuthMap
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
@@ -26,9 +23,9 @@ TEST_DATA_MIXED_MODULESTORE = mixed_store_config(settings.COMMON_TEST_DATA_ROOT,
 
 
 class LoginTest(TestCase):
-    '''
+    """
     Test student.views.login_user() view
-    '''
+    """
 
     def setUp(self):
         # Create one user and save it to the database

@@ -31,7 +31,6 @@ from student.tests.factories import UserFactory
 
 import courseware.views as views
 from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
-from course_modes.models import CourseMode
 import shoppingcart
 
 from util.tests.test_date_utils import fake_ugettext, fake_pgettext
@@ -256,51 +255,6 @@ class ViewsTestCase(TestCase):
         #       generate/store a real password.
         self.assertEqual(chat_settings['password'], "johndoe@%s" % domain)
 
-    def test_course_mktg_about_coming_soon(self):
-        # we should not be able to find this course
-        url = reverse('mktg_about_course', kwargs={'course_id': 'no/course/here'})
-        response = self.client.get(url)
-        self.assertIn('Coming Soon', response.content)
-
-    def test_course_mktg_register(self):
-        response = self._load_mktg_about()
-        self.assertIn('Enroll in', response.content)
-        self.assertNotIn('and choose your student track', response.content)
-
-    def test_course_mktg_register_multiple_modes(self):
-        CourseMode.objects.get_or_create(
-            mode_slug='honor',
-            mode_display_name='Honor Code Certificate',
-            course_id=self.course_key
-        )
-        CourseMode.objects.get_or_create(
-            mode_slug='verified',
-            mode_display_name='Verified Certificate',
-            course_id=self.course_key
-        )
-
-        response = self._load_mktg_about()
-        self.assertIn('Enroll in', response.content)
-        self.assertIn('and choose your student track', response.content)
-        # clean up course modes
-        CourseMode.objects.all().delete()
-
-    @patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': True})
-    def test_mktg_about_language_edx_domain(self):
-        # Since we're in an edx-controlled domain, and our marketing site
-        # supports only English, override the language setting
-        # and use English.
-        response = self._load_mktg_about(language='eo')
-        self.assertContains(response, "Enroll in")
-
-    @patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': False})
-    def test_mktg_about_language_openedx(self):
-        # If we're in an OpenEdX installation,
-        # may want to support languages other than English,
-        # so respect the language code.
-        response = self._load_mktg_about(language='eo')
-        self.assertContains(response, u"Énröll ïn".encode('utf-8'))
-
     def test_submission_history_accepts_valid_ids(self):
         # log into a staff account
         admin = AdminFactory()
@@ -339,30 +293,6 @@ class ViewsTestCase(TestCase):
         })
         response = self.client.get(url)
         self.assertFalse('<script>' in response.content)
-
-    def _load_mktg_about(self, language=None):
-        """
-        Retrieve the marketing about button (iframed into the marketing site)
-        and return the HTTP response.
-
-        Keyword Args:
-            language (string): If provided, send this in the 'Accept-Language' HTTP header.
-
-        Returns:
-            Response
-
-        """
-        # Log in as an administrator to guarantee that we can access the button
-        admin = AdminFactory()
-        self.client.login(username=admin.username, password='test')
-
-        # If provided, set the language header
-        headers = {}
-        if language is not None:
-            headers['HTTP_ACCEPT_LANGUAGE'] = language
-
-        url = reverse('mktg_about_course', kwargs={'course_id': unicode(self.course_key)})
-        return self.client.get(url, **headers)
 
 
 # setting TIME_ZONE_DISPLAYED_FOR_DEADLINES explicitly

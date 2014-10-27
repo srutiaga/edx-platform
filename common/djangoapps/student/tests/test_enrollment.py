@@ -11,11 +11,8 @@ from xmodule.modulestore.tests.django_utils import (
     ModuleStoreTestCase, mixed_store_config
 )
 from xmodule.modulestore.tests.factories import CourseFactory
-from social.strategies.django_strategy import DjangoStrategy
-from django.test.client import RequestFactory
 from student.tests.factories import UserFactory, CourseModeFactory
 from student.models import CourseEnrollment
-from third_party_auth.pipeline import change_enrollment as change_enrollment_third_party
 
 # Since we don't need any XML course fixtures, use a modulestore configuration
 # that disables the XML modulestore.
