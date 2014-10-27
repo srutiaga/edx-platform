@@ -46,7 +46,7 @@ If true, it:
 from . import provider
 
 
-_FIELDS_STORED_IN_SESSION = ['auth_entry', 'next']
+_FIELDS_STORED_IN_SESSION = ['auth_entry', 'next', 'enroll_course_id']
 _MIDDLEWARE_CLASSES = (
     'third_party_auth.middleware.ExceptionMiddleware',
 )

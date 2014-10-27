@@ -400,10 +400,6 @@ def register_user(request, extra_context=None):
         'username': '',
     }
 
-    # We save this so, later on, we can determine what course motivated a user's signup
-    # if they actually complete the registration process
-    request.session['registration_course_id'] = course_id
-
     if extra_context is not None:
         context.update(extra_context)
 

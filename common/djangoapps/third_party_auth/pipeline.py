@@ -79,8 +79,24 @@ from logging import getLogger
 from . import provider
 
 
+# These are the query string params you can pass
+# to the URL that starts the authentication process.
+#
+# `AUTH_ENTRY_KEY` is required and indicates how the user
+# enters the authentication process.
+#
+# `AUTH_REDIRECT_KEY` provides an optional URL to redirect
+# to upon successful authentication
+# (if not provide, defaults to `_SOCIAL_AUTH_LOGIN_REDIRECT_URL`)
+#
+# `AUTH_ENROLL_COURSE_ID_KEY` provides the course ID that a student
+# is trying to enroll in, used to generate analytics events
+# and auto-enroll students.
+
 AUTH_ENTRY_KEY = 'auth_entry'
 AUTH_REDIRECT_KEY = 'next'
+AUTH_ENROLL_COURSE_ID_KEY = 'enroll_course_id'
+
 AUTH_ENTRY_DASHBOARD = 'dashboard'
 AUTH_ENTRY_LOGIN = 'login'
 AUTH_ENTRY_PROFILE = 'profile'
@@ -180,7 +196,7 @@ def _get_enabled_provider_by_name(provider_name):
     return enabled_provider
 
 
-def _get_url(view_name, backend_name, auth_entry=None, redirect_url=None):
+def _get_url(view_name, backend_name, auth_entry=None, redirect_url=None, enroll_course_id=None):
     """Creates a URL to hook into social auth endpoints."""
     kwargs = {'backend': backend_name}
     url = reverse(view_name, kwargs=kwargs)
@@ -191,6 +207,9 @@ def _get_url(view_name, backend_name, auth_entry=None, redirect_url=None):
 
     if redirect_url:
         query_params[AUTH_REDIRECT_KEY] = redirect_url
+
+    if enroll_course_id:
+        query_params[AUTH_ENROLL_COURSE_ID_KEY] = enroll_course_id
 
     query_string = u"?{params}".format(
         params=u"&".join([
@@ -240,7 +259,7 @@ def get_disconnect_url(provider_name):
     return _get_url('social:disconnect', enabled_provider.BACKEND_CLASS.name)
 
 
-def get_login_url(provider_name, auth_entry, redirect_url=None):
+def get_login_url(provider_name, auth_entry, redirect_url=None, enroll_course_id=None):
     """Gets the login URL for the endpoint that kicks off auth with a provider.
 
     Args:
@@ -251,7 +270,11 @@ def get_login_url(provider_name, auth_entry, redirect_url=None):
             Must be one of _AUTH_ENTRY_CHOICES.
 
     Keyword Args:
-        redirect_url (string): TODO
+        redirect_url (string): If provided, redirect to this URL at the end
+            of the authentication process.
+
+        enroll_course_id (string): If provided, auto-enroll the user in this
+            course upon successful authentication.
 
     Returns:
         String. URL that starts the auth pipeline for a provider.
@@ -265,7 +288,8 @@ def get_login_url(provider_name, auth_entry, redirect_url=None):
         'social:begin',
         enabled_provider.BACKEND_CLASS.name,
         auth_entry=auth_entry,
-        redirect_url=redirect_url
+        redirect_url=redirect_url,
+        enroll_course_id=enroll_course_id
     )
 
 
@@ -401,7 +425,7 @@ def redirect_to_supplementary_form(strategy, details, response, uid, is_dashboar
         return redirect('/register', name='register_user')
 
 @partial.partial
-def login_analytics(*args, **kwargs):
+def login_analytics(enroll_course_id=None, *args, **kwargs):
     """ Sends login info to Segment.io """
     event_name = None
 
@@ -418,19 +442,18 @@ def login_analytics(*args, **kwargs):
             event_name = action_to_event_name[action]
 
     if event_name is not None:
-        registration_course_id = kwargs['request'].session.get('registration_course_id')
         tracking_context = tracker.get_tracker().resolve_context()
         analytics.track(
             kwargs['user'].id,
             event_name,
             {
                 'category': "conversion",
-                'label': registration_course_id,
+                'label': enroll_course_id,
                 'provider': getattr(kwargs['backend'], 'name')
             },
             context={
                 'Google Analytics': {
-                    'clientId': tracking_context.get('client_id') 
+                    'clientId': tracking_context.get('client_id')
                 }
             }
         )
@@ -441,9 +464,9 @@ def change_enrollment(strategy, user=None, *args, **kwargs):
     If the user accessed the third party auth flow after trying to register for
     a course, we automatically log them into that course.
     """
-    course_id = strategy.session_get('registration_course_id')
-    if course_id:
-        course_id = CourseKey.from_string(course_id)
+    enroll_course_id = strategy.session_get('enroll_course_id')
+    if enroll_course_id:
+        course_id = CourseKey.from_string(enroll_course_id)
         if CourseMode.can_auto_enroll(course_id):
             try:
                 CourseEnrollment.enroll(user, course_id)

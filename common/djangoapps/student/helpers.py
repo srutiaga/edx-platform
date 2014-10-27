@@ -49,6 +49,7 @@ def auth_pipeline_urls(auth_entry, redirect_url=None, course_id=None):
     return {
         provider.NAME: pipeline.get_login_url(
             provider.NAME, auth_entry,
+            enroll_course_id=course_id,
             redirect_url=pipeline_redirect
         )
         for provider in provider.Registry.enabled()

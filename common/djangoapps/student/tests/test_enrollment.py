@@ -96,26 +96,6 @@ class EnrollmentTest(ModuleStoreTestCase):
             self.assertTrue(is_active)
             self.assertEqual(course_mode, enrollment_mode)
 
-    def test_enroll_from_third_party_redirect(self):
-        """
-        Test that, when a user visits the registration page *after* visiting a course,
-        if they go on to register and/or log in via third-party auth, they'll be enrolled
-        in that course.
-
-        The testing here is a bit hackish, since we just ping the registration page, then
-        directly call the step in the third party pipeline that registers the user if
-        `registration_course_id` is set in the session, but it should catch any major breaks.
-        """
-        self.fail("TODO")
-        # self.client.logout()
-        # self.client.get(reverse('register_user'), {'course_id': self.course.id})
-        # self.client.login(username=self.USERNAME, password=self.PASSWORD)
-        # self.dummy_request = RequestFactory().request()
-        # self.dummy_request.session = self.client.session
-        # strategy = DjangoStrategy(RequestFactory, request=self.dummy_request)
-        # change_enrollment_third_party(strategy, is_register=True, user=self.user)
-        # self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course.id))
-
     def test_unenroll(self):
         # Enroll the student in the course
         CourseEnrollment.enroll(self.user, self.course.id, mode="honor")
