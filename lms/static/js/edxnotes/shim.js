@@ -35,5 +35,54 @@
               '</span>',
             '</li>'
         ].join('');
+
+        $.extend(true, Annotator.prototype, {
+            events: {
+                '.annotator-hl click': 'onHighlightClick',
+                '.annotator-viewer click': 'onNoteClick'
+            },
+
+            isFrozen: false,
+
+            onHighlightClick: function (event) {
+                Annotator.Util.preventEventDefault(event);
+
+                if (!this.isFrozen) {
+                    event.stopPropagation();
+                    this.onHighlightMouseover.call(this, event);
+                }
+                _.invoke(Annotator._instances, 'freeze');
+            },
+
+            onNoteClick: function (event) {
+                event.stopPropagation();
+                Annotator.Util.preventEventDefault(event);
+                _.invoke(Annotator._instances, 'freeze');
+            },
+
+            freeze: function() {
+                if (!this.isFrozen) {
+                    // Remove default events
+                    this.removeEvents();
+                    this.viewer.element.unbind('mouseover mouseout');
+                    $(document).on('click.edxnotes:freeze', this.unfreeze.bind(this));
+                    this.isFrozen = true;
+                }
+            },
+
+            unfreeze: function() {
+                if (this.isFrozen) {
+                    // Add default events
+                    this.addEvents();
+                    this.viewer.element.bind({
+                        'mouseover': this.clearViewerHideTimer,
+                        'mouseout':  this.startViewerHideTimer
+                    });
+                    this.viewer.hide();
+                    $(document).off('click.edxnotes:freeze');
+                    this.isFrozen = false;
+                }
+            }
+        });
     });
 }).call(this, define || RequireJS.define, jQuery, _);

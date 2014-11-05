@@ -7,16 +7,15 @@ from ...pages.lms.edxnotes import EdxNotesUnitPage
 from ...fixtures.edxnotes import EdxNotesFixture, Note, Range
 
 
-class EdxNotesTest(UniqueCourseTest):
+class EdxNotesTestMixin(UniqueCourseTest):
     """
-    Tests for annotation inside HTML components in LMS.
+    Creates a course with initial data and contains useful helper methods.
     """
-
     def setUp(self):
         """
         Initialize pages and install a course fixture.
         """
-        super(EdxNotesTest, self).setUp()
+        super(EdxNotesTestMixin, self).setUp()
         self.courseware_page = CoursewarePage(self.browser, self.course_id)
         self.course_nav = CourseNavPage(self.browser)
         self.note_page = EdxNotesUnitPage(self.browser, self.course_id)
@@ -70,6 +69,11 @@ class EdxNotesTest(UniqueCourseTest):
             )
         self.edxnotes_fix.install()
 
+
+class EdxNotesDefaultInteractionsTest(EdxNotesTestMixin):
+    """
+    Tests for creation, editing, deleting annotations inside HTML components in LMS.
+    """
     def create_notes(self, components, offset=0):
         self.assertGreater(len(components), 0)
         index = offset
@@ -205,3 +209,76 @@ class EdxNotesTest(UniqueCourseTest):
         self.course_nav.go_to_sequential_position(1)
         components = self.note_page.components
         self.assert_notes_are_removed(components)
+
+
+class EdxNotesToggleSingleNoteTest(EdxNotesTestMixin):
+    """
+    Tests for toggling single annotation.
+    """
+
+    def setUp(self):
+        super(EdxNotesToggleSingleNoteTest, self).setUp()
+        self._add_notes()
+        self.note_page.visit()
+
+    def test_can_toggle_by_clicking_on_highlighted_text(self):
+        """
+        Scenario: User can toggle a single note by clicking on highlighted text.
+        Given I have a course with components with notes
+        When I click on highlighted text
+        And I move mouse out of the note
+        Then I see that the note is still shown
+        When I click outside the note
+        Then I see the the note is closed
+        """
+        note = self.note_page.notes[0]
+
+        note.click_on_highlight()
+        self.note_page.move_mouse_to('body')
+        self.assertTrue(note.is_visible)
+        self.note_page.click('body')
+        self.assertFalse(note.is_visible)
+
+    def test_can_toggle_by_clicking_on_the_note(self):
+        """
+        Scenario: User can toggle a single note by clicking on the note.
+        Given I have a course with components with notes
+        When I click on the note
+        And I move mouse out of the note
+        Then I see that the note is still shown
+        When I click outside the note
+        Then I see the the note is closed
+        """
+        note = self.note_page.notes[0]
+
+        note.show().click_on_viewer()
+        self.note_page.move_mouse_to('body')
+        self.assertTrue(note.is_visible)
+        self.note_page.click('body')
+        self.assertFalse(note.is_visible)
+
+    def test_interaction_between_notes(self):
+        """
+        Scenario: Interactions between notes works well.
+        Given I have a course with components with notes
+        When I click on highlighted text in the first component
+        And I move mouse out of the note
+        Then I see that the note is still shown
+        When I click on highlighted text in the second component
+        Then I do not see any notes
+        When I click again on highlighted text in the second component
+        Then I see appropriate note
+        """
+        note_1 = self.note_page.notes[0]
+        note_2 = self.note_page.notes[1]
+
+        note_1.click_on_highlight()
+        self.note_page.move_mouse_to('body')
+        self.assertTrue(note_1.is_visible)
+
+        note_2.click_on_highlight()
+        self.assertFalse(note_1.is_visible)
+        self.assertFalse(note_2.is_visible)
+
+        note_2.click_on_highlight()
+        self.assertTrue(note_2.is_visible)
