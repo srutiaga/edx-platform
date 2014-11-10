@@ -46,9 +46,11 @@ ${_('Company Contact Name:')} ${order.company_contact_name}<br>
 ${_('Company Contact Email:')} ${order.company_contact_email}<br>
 %endif
 % if order.recipient_name:
+# Translators: this will be the name of a person receiving an email
 ${_('Recipient Name:')} ${order.recipient_name}<br>
  %endif
 % if order.recipient_email:
+# Translators: this will be the email address of a person receiving an email
 ${_('Recipient Email:')} ${order.recipient_email}<br>
  %endif
 
@@ -65,11 +67,13 @@ ${order.bill_to_country.upper()}
 
 <p><b>${_("A CSV file of your registration URLs is attached. Please distribute registration URLs to each student planning to enroll using the email template below.")}</b></p>
 
-<p>${_("Warm regards,")}<br>
 % if payment_email_signature:
+<p>${_("Warm regards,")}<br>
 ${payment_email_signature}
 % else:
-${_("The {platform_name} Team").format(platform_name=platform_name)}
+<p>${_("Warm regards,<br>
+
+The {platform_name} Team").format(platform_name=platform_name)}
 %endif
 </p>
 
