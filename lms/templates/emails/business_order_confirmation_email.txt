@@ -87,11 +87,11 @@ The {platform_name} Team").format(platform_name=platform_name)}
 
 <p>Your redeem url is: [[Enter Redeem URL here from the attached CSV]]</p>
 
-<p>${_("(1) Register for an account at <a href='https://{site_name}' >https://{site_name}</a>.").format(site_name=site_name)}<br>
-${_("(2) Once registered, copy the redeem URL and paste it in your web browser.")}<br>
-${_("(3) On the enrollment confirmation page, Click the 'Activate Enrollment Code' button. This will show the enrollment confirmation.")}<br>
-${_("(4) You should be able to click on 'view course' button or see your course on your student dashboard at <a href='https://{dashboard_url}'>https://{dashboard_url}</a>").format(dashboard_url=dashboard_url)}<br>
-${_("(5) Course materials will not be available until the course start date.")}</p>
+<p>"(1) Register for an account at <a href='https://{site_name}'>https://{site_name}</a>".format(site_name=site_name)<br>
+(2) Once registered, copy the redeem URL and paste it in your web browser.<br>
+(3) On the enrollment confirmation page, Click the 'Activate Enrollment Code' button. This will show the enrollment confirmation.<br>
+"(4) You should be able to click on 'view course' button or see your course on your student dashboard at <a href='https://{dashboard_url}'>https://{dashboard_url}</a>".format(dashboard_url=dashboard_url)<br>
+(5) Course materials will not be available until the course start date.</p>
 
 <p>Sincerely,</p>
 <p>[[Your Signature]]</p>
