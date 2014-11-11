@@ -57,7 +57,9 @@
             onNoteClick: function (event) {
                 event.stopPropagation();
                 Annotator.Util.preventEventDefault(event);
-                _.invoke(Annotator._instances, 'freeze');
+                if (!$(event.target).is('.annotator-delete')) {
+                    _.invoke(Annotator._instances, 'freeze');
+                }
             },
 
             freeze: function() {
