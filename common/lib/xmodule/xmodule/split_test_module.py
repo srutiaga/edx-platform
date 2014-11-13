@@ -13,7 +13,6 @@ from xmodule.seq_module import SequenceDescriptor
 from xmodule.studio_editable import StudioEditableModule, StudioEditableDescriptor
 from xmodule.x_module import XModule, module_attr, STUDENT_VIEW
 from xmodule.validation import StudioValidation, StudioValidationMessage
-from xmodule.modulestore.inheritance import UserPartitionList
 
 from lxml import etree
 
@@ -60,13 +59,6 @@ class SplitTestFields(object):
         default=_("Content Experiment")
     )
 
-    # Specified here so we can see what the value set at the course-level is.
-    user_partitions = UserPartitionList(
-        help=_("The list of group configurations for partitioning students in content experiments."),
-        default=[],
-        scope=Scope.settings
-    )
-
     user_partition_id = Integer(
         help=_("The configuration defines how users are grouped for this content experiment. Caution: Changing the group configuration of a student-visible experiment will impact the experiment data."),
         scope=Scope.content,
@@ -80,10 +72,6 @@ class SplitTestFields(object):
     # location needs to actually match one of the children of this
     # Block.  (expected invariant that we'll need to test, and handle
     # authoring tools that mess this up)
-
-    # TODO: is there a way to add some validation around this, to
-    # be run on course load or in studio or ....
-
     group_id_to_child = ReferenceValueDict(
         help=_("Which child module students in a particular group_id should see"),
         scope=Scope.content
