@@ -1,22 +1,20 @@
-import django.test
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.http import Http404
-
+import django.test
 from django.test.utils import override_settings
 from mock import call, patch
 
+from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory
-from course_groups.models import CourseUserGroup, CourseUserGroupPartitionGroup
-from course_groups import cohorts
-from course_groups.tests.helpers import topic_name_to_id, config_course_cohorts, CohortFactory
-
 from xmodule.modulestore.django import modulestore, clear_existing_modulestores
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
-
 from xmodule.modulestore.tests.django_utils import mixed_store_config
+
+from ..models import CourseUserGroup, CourseUserGroupPartitionGroup
+from .. import cohorts
+from ..tests.helpers import topic_name_to_id, config_course_cohorts, CohortFactory
 
 # NOTE: running this with the lms.envs.test config works without
 # manually overriding the modulestore.  However, running with
@@ -27,7 +25,7 @@ TEST_MAPPING = {'edX/toy/2012_Fall': 'xml'}
 TEST_DATA_MIXED_MODULESTORE = mixed_store_config(TEST_DATA_DIR, TEST_MAPPING)
 
 
-@patch("course_groups.cohorts.tracker")
+@patch("openedx.core.djangoapps.course_groups.cohorts.tracker")
 class TestCohortSignals(django.test.TestCase):
     def setUp(self):
         self.course_key = SlashSeparatedCourseKey("dummy", "dummy", "dummy")
@@ -453,7 +451,7 @@ class TestCohorts(django.test.TestCase):
             lambda: cohorts.get_cohort_by_id(course.id, cohort.id)
         )
 
-    @patch("course_groups.cohorts.tracker")
+    @patch("openedx.core.djangoapps.course_groups.cohorts.tracker")
     def test_add_cohort(self, mock_tracker):
         """
         Make sure cohorts.add_cohort() properly adds a cohort to a course and handles
@@ -476,7 +474,7 @@ class TestCohorts(django.test.TestCase):
             lambda: cohorts.add_cohort(SlashSeparatedCourseKey("course", "does_not", "exist"), "My Cohort")
         )
 
-    @patch("course_groups.cohorts.tracker")
+    @patch("openedx.core.djangoapps.course_groups.cohorts.tracker")
     def test_add_user_to_cohort(self, mock_tracker):
         """
         Make sure cohorts.add_user_to_cohort() properly adds a user to a cohort and

@@ -255,7 +255,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
         # the partition will be found since it has the same id, but the group
         # ids aren't present anymore, so the scheme returns None (and logs a
         # warning)
-        with patch('course_groups.partitions.log') as mock_log:
+        with patch('openedx.core.djangoapps.course_groups.partitions.log') as mock_log:
             self.assertIsNone(
                 CohortPartitionScheme.get_group_for_user(
                     self.course_key,
@@ -279,7 +279,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
         )
         # the partition will not be found even though the group ids match, so the
         # scheme returns None (and logs a warning).
-        with patch('course_groups.partitions.log') as mock_log:
+        with patch('openedx.core.djangoapps.course_groups.partitions.log') as mock_log:
             self.assertIsNone(
                 CohortPartitionScheme.get_group_for_user(
                     self.course_key,
