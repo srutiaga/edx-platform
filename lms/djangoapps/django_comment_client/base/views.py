@@ -16,7 +16,7 @@ from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 from courseware.access import has_access
-from util import store_uploaded_file
+from util.file import store_uploaded_file
 from courseware.courses import get_course_with_access, get_course_by_id
 import django_comment_client.settings as cc_settings
 from django_comment_client.utils import (
@@ -569,8 +569,10 @@ def upload(request, course_id):  # ajax upload file to a question or answer
 
         #request.user.assert_can_upload_file()
 
-        new_file_name = str(time.time()).replace('.', str(random.randint(0, 100000)))
-        file_storage = store_uploaded_file(request, 'file-upload', cc_settings.ALLOWED_UPLOAD_FILE_TYPES, new_file_name)
+        base_file_name = str(time.time()).replace('.', str(random.randint(0, 100000)))
+        file_storage, new_file_name = store_uploaded_file(
+            request, 'file-upload', cc_settings.ALLOWED_UPLOAD_FILE_TYPES, base_file_name
+        )
 
     except exceptions.PermissionDenied, err:
         error = unicode(err)

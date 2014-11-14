@@ -161,7 +161,7 @@ def add_users_to_cohorts(request, course_key_string):
 
     try:
         # TODO: what is the maximum filesize we want?
-        stored_file = store_uploaded_file(
+        file_storage, filename = store_uploaded_file(
             request, 'uploaded-file', ['.csv'], 10000,
             course_and_time_based_filename_generator(course_key, "cohorts")
         )
