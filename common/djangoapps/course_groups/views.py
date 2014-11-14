@@ -160,9 +160,9 @@ def add_users_to_cohorts(request, course_key_string):
     get_course_with_access(request.user, 'staff', course_key)
 
     try:
-        # TODO: what is the maximum filesize we want?
+        # TODO: what is the maximum filesize we want to enforce?
         file_storage, filename = store_uploaded_file(
-            request, 'uploaded-file', ['.csv'], 10000,
+            request, 'uploaded-file', ['.csv'],
             course_and_time_based_filename_generator(course_key, "cohorts")
         )
     except Exception as err:

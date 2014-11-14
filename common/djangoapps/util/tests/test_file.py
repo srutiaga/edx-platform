@@ -12,6 +12,7 @@ import util.file
 from util.file import course_and_time_based_filename_generator, store_uploaded_file
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from django.core import exceptions
+from django.core.files.storage import get_storage_class
 
 
 class FilenameGeneratorTestCase(TestCase):
@@ -30,6 +31,9 @@ class FilenameGeneratorTestCase(TestCase):
         self.addCleanup(datetime_patcher.stop)
 
     def test_filename_generator(self):
+        """
+        Tests that the generator creates names based on course_id, base name, and date.
+        """
         self.assertEqual(
             "course_id_file_1974-06-22-010203",
             course_and_time_based_filename_generator("course/id", "file")
@@ -53,29 +57,57 @@ class StoreUploadedFileTestCase(TestCase):
     def setUp(self):
         self.request = Mock(spec=HttpRequest)
         self.request.FILES = {"uploaded_file": SimpleUploadedFile("tempfile.csv", "content")}
+        self.stored_file_name = None
+        self.file_storage = None
+
+    def tearDown(self):
+        if self.file_storage and self.stored_file_name:
+            self.file_storage.delete(self.stored_file_name)
 
     def test_error_conditions(self):
+        """
+        Verifies that exceptions are thrown in the expected cases.
+        """
         def verify_exception(expected_message):
             self.assertEqual(expected_message, error.exception.message)
 
         with self.assertRaises(ValueError) as error:
-            store_uploaded_file(self.request, "wrong_key", [".txt", ".csv"], 1000, "stored_file")
+            store_uploaded_file(self.request, "wrong_key", [".txt", ".csv"], "stored_file")
         verify_exception("No file uploaded with key 'wrong_key'.")
 
         with self.assertRaises(exceptions.PermissionDenied) as error:
-            store_uploaded_file(self.request, "uploaded_file", [], 1000, "stored_file")
+            store_uploaded_file(self.request, "uploaded_file", [], "stored_file")
         verify_exception("Allowed file types are ''.")
 
         with self.assertRaises(exceptions.PermissionDenied) as error:
-            store_uploaded_file(self.request, "uploaded_file", [".xxx", ".bar"], 1000, "stored_file")
+            store_uploaded_file(self.request, "uploaded_file", [".xxx", ".bar"], "stored_file")
         verify_exception("Allowed file types are '.xxx', '.bar'.")
 
         with self.assertRaises(exceptions.PermissionDenied) as error:
-            store_uploaded_file(self.request, "uploaded_file", [".csv"], 2, "stored_file")
+            store_uploaded_file(self.request, "uploaded_file", [".csv"], "stored_file", max_file_size=2)
         verify_exception("Maximum upload file size is 2 bytes.")
 
-    def test_file_upload(self):
-        file_storage, file_name = store_uploaded_file(self.request, "uploaded_file", [".csv"], 1000, "stored_file")
+    def test_file_upload_lower_case_extension(self):
+        """
+        Tests uploading a file with lower case extension. Verifies that the stored file contents are correct.
+        """
+        self.file_storage, self.stored_file_name = store_uploaded_file(
+            self.request, "uploaded_file", [".csv"], "stored_file"
+        )
+        self._verify_successful_upload()
 
+    def test_file_upload_upper_case_extension(self):
+        """
+        Tests uploading a file with upper case extension. Verifies that the stored file contents are correct.
+        """
+        self.request.FILES = {"uploaded_file": SimpleUploadedFile("tempfile.CSV", "content")}
+        self.file_storage, self.stored_file_name = store_uploaded_file(
+            self.request, "uploaded_file", [".gif", ".csv"], "second_stored_file"
+        )
+        self._verify_successful_upload()
 
-
+    def _verify_successful_upload(self):
+        self.assertTrue(self.file_storage.exists(self.stored_file_name))
+        with self.file_storage.open(self.stored_file_name, 'r') as f:
+            data = f.read()
+        self.assertEqual("content", data)
