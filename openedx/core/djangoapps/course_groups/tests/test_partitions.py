@@ -28,15 +28,14 @@ TEST_DATA_MIXED_MODULESTORE = mixed_store_config(TEST_DATA_DIR, TEST_MAPPING)
 @override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
 class TestCohortPartitionScheme(django.test.TestCase):
     """
-    Test the logic for mapping a user to a partition group based on their cohort.
+    Test the logic for linking a user to a partition group based on their cohort.
     """
 
     def setUp(self):
         """
         Regenerate a course with cohort configuration, partition and groups,
-        cohorts, and students for each test.
+        and a student for each test.
         """
-        clear_existing_modulestores()
         self.course_key = SlashSeparatedCourseKey("edX", "toy", "2012_Fall")
         config_course_cohorts(modulestore().get_course(self.course_key), [], cohorted=True)
 
@@ -48,12 +47,11 @@ class TestCohortPartitionScheme(django.test.TestCase):
             self.groups,
             scheme=CohortPartitionScheme
         )
-        self.students = [UserFactory.create() for _ in range(3)]
-        self.cohorts = [CohortFactory(course_id=self.course_key) for _ in range(2)]
+        self.student = UserFactory.create()
 
-    def _assignCohortToPartitionGroup(self, cohort, partition, group):
+    def link_cohort_partition_group(self, cohort, partition, group):
         """
-        utility for creating cohort -> partition group mappings
+        Utility for creating cohort -> partition group links
         """
         CourseUserGroupPartitionGroup(
             course_user_group=cohort,
@@ -61,165 +59,123 @@ class TestCohortPartitionScheme(django.test.TestCase):
             group_id=group.id,
         ).save()
 
-    def _unassignCohortPartitionGroup(self, cohort):
+    def unlink_cohort_partition_group(self, cohort):
         """
-        utility for removing cohort -> partition group mappings
+        Utility for removing cohort -> partition group links
         """
         CourseUserGroupPartitionGroup.objects.filter(course_user_group=cohort).delete()
 
-    def test_student_cohort_assignment(self):
+    def assert_student_in_group(self, group, partition=None):
         """
-        Test that the CohortPartitionScheme returns the correct group for a
-        student when the student is moved in and out of different cohorts.
         """
-        self.assertIsNone(
+        self.assertEqual(
             CohortPartitionScheme.get_group_for_user(
                 self.course_key,
-                self.students[0],
-                self.user_partition,
-            )
+                self.student,
+                partition or self.user_partition,
+            ),
+            group
         )
-        # place student 0 into cohort 0
-        add_user_to_cohort(self.cohorts[0],  self.students[0].username)
-        # map cohort 0 to group 0 in the partition
-        self._assignCohortToPartitionGroup(
-            self.cohorts[0],
+
+    def test_student_cohort_assignment(self):
+        """
+        Test that the CohortPartitionScheme continues to return the correct
+        group for a student as the student is moved in and out of different
+        cohorts.
+        """
+        first_cohort, second_cohort = [
+            CohortFactory(course_id=self.course_key) for _ in range(2)
+        ]
+        # place student 0 into first cohort
+        add_user_to_cohort(first_cohort,  self.student.username)
+        self.assert_student_in_group(None)
+
+        # link first cohort to group 0 in the partition
+        self.link_cohort_partition_group(
+            first_cohort,
             self.user_partition,
             self.groups[0],
         )
-        # map cohort 1 to to group 1 in the partition
-        self._assignCohortToPartitionGroup(
-            self.cohorts[1],
+        # link second cohort to to group 1 in the partition
+        self.link_cohort_partition_group(
+            second_cohort,
             self.user_partition,
             self.groups[1],
         )
-        # check that the mapping places student 0 into partition group 0
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            ),
-            self.groups[0]
-        )
-        # move student from cohort 0 to cohort 1
-        add_user_to_cohort(self.cohorts[1], self.students[0].username)
-        # check that the mapping is correctly updated
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            ),
-            self.groups[1]
-        )
+        self.assert_student_in_group(self.groups[0])
+
+        # move student from first cohort to second cohort
+        add_user_to_cohort(second_cohort, self.student.username)
+        self.assert_student_in_group(self.groups[1])
+
         # move the student out of the cohort
-        self.cohorts[1].users.remove(self.students[0])
-        # check that the mapping returns nothing again
-        self.assertIsNone(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            )
-        )
+        second_cohort.users.remove(self.student)
+        self.assert_student_in_group(None)
 
     def test_cohort_partition_group_assignment(self):
         """
         Test that the CohortPartitionScheme returns the correct group for a
-        student in a cohort when the cohort mapping is created / moved / deleted.
+        student in a cohort when the cohort link is created / moved / deleted.
         """
-        # assign user to cohort (but cohort isn't mapped to a partition group yet)
-        add_user_to_cohort(self.cohorts[0], self.students[0].username)
-        # scheme should not yet find any mapping
-        self.assertIsNone(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            )
-        )
-        # map cohort 0 to group 0
-        self._assignCohortToPartitionGroup(
-            self.cohorts[0],
+        test_cohort = CohortFactory(course_id=self.course_key)
+
+        # assign user to cohort (but cohort isn't linked to a partition group yet)
+        add_user_to_cohort(test_cohort, self.student.username)
+        # scheme should not yet find any link
+        self.assert_student_in_group(None)
+
+        # link cohort to group 0
+        self.link_cohort_partition_group(
+            test_cohort,
             self.user_partition,
             self.groups[0],
         )
-        # now the scheme should find a mapping
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            ),
-            self.groups[0]
-        )
-        # map cohort 0 to group 1 (first unmap it from group 0)
-        self._unassignCohortPartitionGroup(
-            self.cohorts[0],
-        )
-        self._assignCohortToPartitionGroup(
-            self.cohorts[0],
+        # now the scheme should find a link
+        self.assert_student_in_group(self.groups[0])
+
+        # link cohort to group 1 (first unlink it from group 0)
+        self.unlink_cohort_partition_group(test_cohort)
+        self.link_cohort_partition_group(
+            test_cohort,
             self.user_partition,
             self.groups[1],
         )
-        # scheme should pick up the mapping
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            ),
-            self.groups[1]
-        )
-        # unmap cohort 0 from anywhere
-        self._unassignCohortPartitionGroup(
-            self.cohorts[0],
+        # scheme should pick up the link
+        self.assert_student_in_group(self.groups[1])
+
+        # unlink cohort from anywhere
+        self.unlink_cohort_partition_group(
+            test_cohort,
         )
         # scheme should now return nothing
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            ),
-            None
-        )
+        self.assert_student_in_group(None)
 
-    def test_partition_changes(self):
+    def setup_student_in_group_0(self):
         """
-        if the name of a user partition is changed, or a group is added to the
-        partition, mappings do not break.
-
-        if the name of a group is changed, mappings do not break.
-
-        if the group is deleted (or its id is changed), there's no ref.
-        integrity enforced, so any references from cohorts to that group will be
-        lost.  A warning should be logged when cohort references are found to
-        groups that no longer exist.
-
-        if the user partition is deleted (or its id is changed), there's no ref.
-        integrity enforced, so any references from cohorts to that partition's
-        groups will be lost.  A warning should be logged when cohort references
-        are found to partitions that no longer exist.
+        Utility to set up a cohort, add our student to the cohort, and link
+        the cohort to self.groups[0]
         """
-        # map cohort 0 to group 0
-        self._assignCohortToPartitionGroup(
-            self.cohorts[0],
+        test_cohort = CohortFactory(course_id=self.course_key)
+
+        # link cohort to group 0
+        self.link_cohort_partition_group(
+            test_cohort,
             self.user_partition,
             self.groups[0],
         )
-        # place student 0 into cohort 0
-        add_user_to_cohort(self.cohorts[0], self.students[0].username)
-        # check mapping is correct
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                self.user_partition,
-            ),
-            self.groups[0]
-        )
+        # place student into cohort
+        add_user_to_cohort(test_cohort, self.student.username)
+        # check link is correct
+        self.assert_student_in_group(self.groups[0])
+
+    def test_partition_changes_nondestructive(self):
+        """
+        If the name of a user partition is changed, or a group is added to the
+        partition, links from cohorts do not break.
+
+        If the name of a group is changed, links from cohorts do not break.
+        """
+        self.setup_student_in_group_0()
 
         # to simulate a non-destructive configuration change on the course, create
         # a new partition with the same id and scheme but with groups renamed and
@@ -232,61 +188,56 @@ class TestCohortPartitionScheme(django.test.TestCase):
             new_groups,
             scheme=CohortPartitionScheme,
         )
-        # the mapping should still be correct
-        self.assertEqual(
-            CohortPartitionScheme.get_group_for_user(
-                self.course_key,
-                self.students[0],
-                new_user_partition,
-            ),
-            new_groups[0]
-        )
+        # the link should still work
+        self.assert_student_in_group(new_groups[0], new_user_partition)
+
+    def test_missing_group(self):
+        """
+        if the group is deleted (or its id is changed), there's no referential
+        integrity enforced, so any references from cohorts to that group will be
+        lost.  A warning should be logged when links are found from cohorts to
+        groups that no longer exist.
+        """
+        self.setup_student_in_group_0()
 
         # to simulate a destructive change on the course, create a new partition
-        # with the same id, but different groups (disjoint ids).
-        new_groups = [Group(11, 'Not Group 10'), Group(21, 'Not Group 20')]
+        # with the same id, but different group ids.
         new_user_partition = UserPartition(
             0,  # same id
             'Another Partition',
             'dummy',
-            new_groups,
+            [Group(11, 'Not Group 10'), Group(21, 'Not Group 20')], # different ids
             scheme=CohortPartitionScheme,
         )
         # the partition will be found since it has the same id, but the group
         # ids aren't present anymore, so the scheme returns None (and logs a
         # warning)
         with patch('openedx.core.djangoapps.course_groups.partitions.log') as mock_log:
-            self.assertIsNone(
-                CohortPartitionScheme.get_group_for_user(
-                    self.course_key,
-                    self.students[0],
-                    new_user_partition,
-                ),
-                None
-            )
+            self.assert_student_in_group(None, new_user_partition)
             self.assertTrue(mock_log.warn.called)
             self.assertRegexpMatches(mock_log.warn.call_args[0][0], 'group not found')
 
+    def test_missing_partition(self):
+        """
+        if the user partition is deleted (or its id is changed), there's no
+        referential integrity enforced, so any references from cohorts to that
+        partition's groups will be lost.  A warning should be logged when links
+        are found from cohorts to partitions that do not exist.
+        """
+        self.setup_student_in_group_0()
+
         # to simulate another destructive change on the course, create a new
         # partition with a different id, but using the same groups.
-        new_groups = [Group(10, 'Group 10'), Group(20, 'Group 20')] # same ids
         new_user_partition = UserPartition(
             1,  # different id
             'Moved Partition',
             'dummy',
-            new_groups,
+            [Group(10, 'Group 10'), Group(20, 'Group 20')], # same ids
             scheme=CohortPartitionScheme,
         )
         # the partition will not be found even though the group ids match, so the
         # scheme returns None (and logs a warning).
         with patch('openedx.core.djangoapps.course_groups.partitions.log') as mock_log:
-            self.assertIsNone(
-                CohortPartitionScheme.get_group_for_user(
-                    self.course_key,
-                    self.students[0],
-                    new_user_partition,
-                ),
-                None
-            )
+            self.assert_student_in_group(None, new_user_partition)
             self.assertTrue(mock_log.warn.called)
             self.assertRegexpMatches(mock_log.warn.call_args[0][0], 'partition mismatch')

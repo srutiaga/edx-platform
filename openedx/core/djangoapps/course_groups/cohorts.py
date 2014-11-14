@@ -375,10 +375,10 @@ def add_user_to_cohort(cohort, username_or_email):
 
 def get_partition_group_id_for_cohort(cohort):
     """
-    Get the ids of the partition and group to which this cohort has been mapped
+    Get the ids of the partition and group to which this cohort has been linked
     as a tuple of (int, int).
 
-    If the cohort has not been mapped to any partition/group, both values in the
+    If the cohort has not been linked to any partition/group, both values in the
     tuple will be None.
     """
     res = CourseUserGroupPartitionGroup.objects.filter(course_user_group=cohort)

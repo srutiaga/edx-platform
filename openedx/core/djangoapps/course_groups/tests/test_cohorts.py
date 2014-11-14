@@ -539,7 +539,6 @@ class TestCohortsAndPartitionGroups(django.test.TestCase):
         """
         Regenerate a test course and cohorts for each test
         """
-        clear_existing_modulestores()
         self.test_course_key = SlashSeparatedCourseKey("edX", "toy", "2012_Fall")
         self.course = modulestore().get_course(self.test_course_key)
 
@@ -550,37 +549,41 @@ class TestCohortsAndPartitionGroups(django.test.TestCase):
         self.group1_id = 10
         self.group2_id = 20
 
-    def _create_cpg(self, cohort, partition_id, group_id):
+    def _link_cohort_partition_group(self, cohort, partition_id, group_id):
         """
         Utility to create cohort -> partition group assignments in the database.
         """
-        cpg = CourseUserGroupPartitionGroup(
+        link = CourseUserGroupPartitionGroup(
             course_user_group=cohort,
             partition_id=partition_id,
             group_id=group_id,
         )
-        cpg.save()
-        return cpg
+        link.save()
+        return link
 
     def test_get_partition_group_id_for_cohort(self):
         """
         Basic test of the partition_group_id accessor function
         """
-        # get_pg_id should return nothing for an unmapped cohort
+        # api should return nothing for an unmapped cohort
         self.assertEqual(
             cohorts.get_partition_group_id_for_cohort(self.first_cohort),
             (None, None),
         )
-        # create a mapping for the cohort in the db
-        cpg = self._create_cpg(self.first_cohort, self.partition_id, self.group1_id)
-        # get_pg_id should return the specified partition and group
+        # create a link for the cohort in the db
+        link = self._link_cohort_partition_group(
+            self.first_cohort,
+            self.partition_id,
+            self.group1_id
+        )
+        # api should return the specified partition and group
         self.assertEqual(
             cohorts.get_partition_group_id_for_cohort(self.first_cohort),
             (self.partition_id, self.group1_id)
         )
-        # delete the mapping in the db
-        cpg.delete()
-        # get_pg_id should return nothing again
+        # delete the link in the db
+        link.delete()
+        # api should return nothing again
         self.assertEqual(
             cohorts.get_partition_group_id_for_cohort(self.first_cohort),
             (None, None),
@@ -588,10 +591,18 @@ class TestCohortsAndPartitionGroups(django.test.TestCase):
 
     def test_multiple_cohorts(self):
         """
-        Test that multiple cohorts can be mapped to the same partition group
+        Test that multiple cohorts can be linked to the same partition group
         """
-        cpg1 = self._create_cpg(self.first_cohort, self.partition_id, self.group1_id)
-        cpg2 = self._create_cpg(self.second_cohort, self.partition_id, self.group1_id)
+        self._link_cohort_partition_group(
+            self.first_cohort,
+            self.partition_id,
+            self.group1_id,
+        )
+        self._link_cohort_partition_group(
+            self.second_cohort,
+            self.partition_id,
+            self.group1_id,
+        )
         self.assertEqual(
             cohorts.get_partition_group_id_for_cohort(self.first_cohort),
             (self.partition_id, self.group1_id),
@@ -605,28 +616,40 @@ class TestCohortsAndPartitionGroups(django.test.TestCase):
         """
         Test that a cohort cannot be mapped to more than one partition group
         """
-        self._create_cpg(self.first_cohort, self.partition_id, self.group1_id)
+        self._link_cohort_partition_group(
+            self.first_cohort,
+            self.partition_id,
+            self.group1_id,
+        )
         with self.assertRaisesRegexp(IntegrityError, 'not unique'):
-            self._create_cpg(self.first_cohort, self.partition_id, self.group2_id)
+            self._link_cohort_partition_group(
+                self.first_cohort,
+                self.partition_id,
+                self.group2_id,
+            )
 
     def test_delete_cascade(self):
         """
-        Test that cohort -> partition group mapping are automatically deleted
+        Test that cohort -> partition group links are automatically deleted
         when their parent cohort is deleted.
         """
-        cpg = self._create_cpg(self.first_cohort, self.partition_id, self.group1_id)
+        self._link_cohort_partition_group(
+            self.first_cohort,
+            self.partition_id,
+            self.group1_id
+        )
         self.assertEqual(
             cohorts.get_partition_group_id_for_cohort(self.first_cohort),
             (self.partition_id, self.group1_id)
         )
-        # delete the cpg
+        # delete the link
         self.first_cohort.delete()
-        # get_pg_id should return nothing at that point
+        # api should return nothing at that point
         self.assertEqual(
             cohorts.get_partition_group_id_for_cohort(self.first_cohort),
             (None, None),
         )
-        # cpg should no longer exist because of delete cascade
+        # link should no longer exist because of delete cascade
         with self.assertRaises(CourseUserGroupPartitionGroup.DoesNotExist):
             CourseUserGroupPartitionGroup.objects.get(
                 course_user_group_id=self.first_cohort.id

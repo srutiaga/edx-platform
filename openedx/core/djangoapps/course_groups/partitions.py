@@ -18,14 +18,14 @@ class CohortPartitionScheme(object):
     @classmethod
     def get_group_for_user(cls, course_id, user, user_partition, track_function=None):
         """
-        Returns the L{Group} from the specified user partition to which the user
+        Returns the Group from the specified user partition to which the user
         is assigned, via their cohort membership and any mappings from cohorts
         to partitions / groups that might exist.
 
         If the user has not yet been assigned to a cohort, an assignment *might*
         be created on-the-fly, as determined by the course's cohort config.
         Any such side-effects will be triggered inside the call to
-        L{course_groups.cohorts.get_cohort}.
+        cohorts.get_cohort().
 
         If the user has no cohort mapping, or there is no (valid) cohort ->
         partition group mapping found, the function returns None.
