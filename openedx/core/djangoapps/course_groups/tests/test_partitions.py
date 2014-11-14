@@ -87,7 +87,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
             CohortFactory(course_id=self.course_key) for _ in range(2)
         ]
         # place student 0 into first cohort
-        add_user_to_cohort(first_cohort,  self.student.username)
+        add_user_to_cohort(first_cohort, self.student.username)
         self.assert_student_in_group(None)
 
         # link first cohort to group 0 in the partition
@@ -206,7 +206,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
             0,  # same id
             'Another Partition',
             'dummy',
-            [Group(11, 'Not Group 10'), Group(21, 'Not Group 20')], # different ids
+            [Group(11, 'Not Group 10'), Group(21, 'Not Group 20')],  # different ids
             scheme=CohortPartitionScheme,
         )
         # the partition will be found since it has the same id, but the group
@@ -232,7 +232,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
             1,  # different id
             'Moved Partition',
             'dummy',
-            [Group(10, 'Group 10'), Group(20, 'Group 20')], # same ids
+            [Group(10, 'Group 10'), Group(20, 'Group 20')],  # same ids
             scheme=CohortPartitionScheme,
         )
         # the partition will not be found even though the group ids match, so the

@@ -28,7 +28,6 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('course_groups_courseusergroup_users', ['courseusergroup_id', 'user_id'])
 
-
     def backwards(self, orm):
         # Removing unique constraint on 'CourseUserGroup', fields ['name', 'course_id']
         db.delete_unique('course_groups_courseusergroup', ['name', 'course_id'])
@@ -38,7 +37,6 @@ class Migration(SchemaMigration):
 
         # Removing M2M table for field users on 'CourseUserGroup'
         db.delete_table('course_groups_courseusergroup_users')
-
 
     models = {
         'auth.group': {
