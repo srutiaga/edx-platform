@@ -37,9 +37,11 @@
             var fileUploaderView = new FileUploaderView({
                 model: fileUploaderModel,
                 el: this.$('.csv-upload'),
-                success: function () {
-                    fileUploaderModel.set("result", gettext("Your file has successfully uploaded. Go to ... to download the results in 5 hours."));
-                    fileUploaderView.render();
+                successNotification: function () {
+                    return new NotificationModel({
+                        type: "confirmation",
+                        title: gettext("Your file has been uploaded. Go check... in 5 minutes.")
+                    });
                 }
             }).render();
 

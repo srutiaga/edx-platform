@@ -5,5 +5,5 @@
         <a href="#" class="choose-file-button"><%- gettext('Choose File') %></a>
         <input class="file_field" name="uploaded-file" type="file" accept="<%- model.get('extension') %>"/>
     </form>
-    <div class="result"><%- model.get('result') %></div>
+    <div class="result"></div>
 </div>
