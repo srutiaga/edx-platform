@@ -14,7 +14,7 @@ from xmodule.modulestore.django import modulestore, clear_existing_modulestores
 from xmodule.modulestore.tests.django_utils import mixed_store_config
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
-from ..partitions import CohortPartitionScheme
+from ..partition_scheme import CohortPartitionScheme
 from ..models import CourseUserGroupPartitionGroup
 from ..cohorts import add_user_to_cohort
 from .helpers import CohortFactory, config_course_cohorts
@@ -67,6 +67,8 @@ class TestCohortPartitionScheme(django.test.TestCase):
 
     def assert_student_in_group(self, group, partition=None):
         """
+        Utility for checking that our test student comes up as assigned to the
+        specified partition (or, if None, no partition at all)
         """
         self.assertEqual(
             CohortPartitionScheme.get_group_for_user(
@@ -193,7 +195,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
 
     def test_missing_group(self):
         """
-        if the group is deleted (or its id is changed), there's no referential
+        If the group is deleted (or its id is changed), there's no referential
         integrity enforced, so any references from cohorts to that group will be
         lost.  A warning should be logged when links are found from cohorts to
         groups that no longer exist.
@@ -212,14 +214,14 @@ class TestCohortPartitionScheme(django.test.TestCase):
         # the partition will be found since it has the same id, but the group
         # ids aren't present anymore, so the scheme returns None (and logs a
         # warning)
-        with patch('openedx.core.djangoapps.course_groups.partitions.log') as mock_log:
+        with patch('openedx.core.djangoapps.course_groups.partition_scheme.log') as mock_log:
             self.assert_student_in_group(None, new_user_partition)
             self.assertTrue(mock_log.warn.called)
             self.assertRegexpMatches(mock_log.warn.call_args[0][0], 'group not found')
 
     def test_missing_partition(self):
         """
-        if the user partition is deleted (or its id is changed), there's no
+        If the user partition is deleted (or its id is changed), there's no
         referential integrity enforced, so any references from cohorts to that
         partition's groups will be lost.  A warning should be logged when links
         are found from cohorts to partitions that do not exist.
@@ -237,7 +239,7 @@ class TestCohortPartitionScheme(django.test.TestCase):
         )
         # the partition will not be found even though the group ids match, so the
         # scheme returns None (and logs a warning).
-        with patch('openedx.core.djangoapps.course_groups.partitions.log') as mock_log:
+        with patch('openedx.core.djangoapps.course_groups.partition_scheme.log') as mock_log:
             self.assert_student_in_group(None, new_user_partition)
             self.assertTrue(mock_log.warn.called)
             self.assertRegexpMatches(mock_log.warn.call_args[0][0], 'partition mismatch')

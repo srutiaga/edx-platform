@@ -20,7 +20,7 @@ setup(
     entry_points={
         'openedx.user_partition_scheme': [
             'random = openedx.core.djangoapps.user_api.partition_schemes:RandomUserPartitionScheme',
-            'cohort = openedx.core.djangoapps.course_groups.partitions:CohortPartitionScheme',
+            'cohort = openedx.core.djangoapps.course_groups.partition_scheme:CohortPartitionScheme',
         ],
     }
 )
