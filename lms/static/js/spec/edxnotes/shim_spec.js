@@ -1,5 +1,5 @@
-define(['jquery', 'js/edxnotes/notes', 'jasmine-jquery'],
-    function($, Notes) {
+define(['jquery', 'underscore', 'js/edxnotes/notes', 'jasmine-jquery'],
+    function($, _, Notes) {
         'use strict';
 
         describe('Test Shim', function() {
@@ -23,6 +23,7 @@ define(['jquery', 'js/edxnotes/notes', 'jasmine-jquery'],
 
             beforeEach(function() {
                 loadFixtures('js/fixtures/edxnotes/edxnotes.html');
+                highlights = [];
                 annotators = [
                     Notes.factory($('div#edx-notes-wrapper-123').get(0), {}),
                     Notes.factory($('div#edx-notes-wrapper-456').get(0), {})
@@ -63,6 +64,26 @@ define(['jquery', 'js/edxnotes/notes', 'jasmine-jquery'],
                 _.invoke(highlights, 'mouseover');
                 _.invoke(highlights, 'mouseout');
                 checkAnnotatorsAreUnfrozen();
+            });
+
+            it('Test that destroying an instance sets all others to unfrozen and unbinds document events', function() {
+                var events;
+                // Freeze all instances
+                highlights[0].click();
+                // Destroy first instance
+                annotators[0].destroy();
+                // Check that click:edxnotes:freeze is not bound to the document element
+                events = $._data(document, 'events').click;
+                _.each(events, function(event) {
+                    expect(event.namespace).not.toBe('edxnotes:freeze');
+                });
+
+                // Check that the remaining instance is unfrozen
+                highlights[1].mouseover();
+                highlights[1].mouseout();
+                expect(annotators[1].isFrozen).toBe(false);
+                expect(annotators[1].onHighlightMouseover).toHaveBeenCalled();
+                expect(annotators[1].startViewerHideTimer).toHaveBeenCalled();
             });
         });
     }

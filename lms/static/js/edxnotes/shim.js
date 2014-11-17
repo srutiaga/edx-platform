@@ -34,6 +34,25 @@
         );
 
         /**
+         * Modifies Annotator.destroy to unbind click.edxnotes:freeze from the
+         * document and reset isFrozen to default value, false.
+         **/
+        Annotator.prototype.destroy = _.compose(
+            Annotator.prototype.destroy,
+            function () {
+                if (this.isFrozen) {
+                    _.invoke(
+                        _.filter(Annotator._instances, function(instance){
+                            return instance !== this;
+                        }), 'unfreeze'
+                    );
+                    $(document).off('click.edxnotes:freeze');
+                    this.isFrozen = false;
+                }
+            }
+        );
+
+        /**
          * Modifies Annotator.Viewer.html.item template to add an i18n for the
          * buttons.
          **/
