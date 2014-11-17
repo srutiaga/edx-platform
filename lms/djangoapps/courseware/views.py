@@ -129,6 +129,26 @@ def render_accordion(request, course, chapter, section, field_data_cache):
     return render_to_string('courseware/accordion.html', context)
 
 
+def save_position_from_leaf(user, request, field_data_cache, xmodule):
+    """
+    Recurses up the course tree starting from a leaf
+    Saving the position property based on the previous node as it goes
+    """
+    current_module = xmodule
+
+    while current_module:
+        parent_location = modulestore().get_parent_location(current_module.location)
+        parent = None
+        if parent_location:
+            parent_descriptor = modulestore().get_item(parent_location)
+            parent = get_module_for_descriptor(user, request, parent_descriptor, field_data_cache, current_module.location.course_key)
+
+        if parent:
+            save_child_position(parent, current_module.location.name)
+
+        current_module = parent
+
+
 def get_current_child(xmodule, min_depth=None):
     """
     Get the xmodule.position's display item of an xmodule that has a position and
