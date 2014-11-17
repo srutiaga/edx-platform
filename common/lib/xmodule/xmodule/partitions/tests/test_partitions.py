@@ -11,6 +11,9 @@ from xmodule.partitions.partitions import Group, UserPartition, UserPartitionErr
 from xmodule.partitions.partitions_service import PartitionService
 from xmodule.tests import get_test_system
 
+from openedx.core.djangoapps.user_api.partition_schemes import RandomUserPartitionScheme
+from openedx.core.djangoapps.course_groups.partition_scheme import CohortPartitionScheme
+
 
 class TestGroup(TestCase):
     """Test constructing groups"""
@@ -300,3 +303,15 @@ class TestPartitionService(PartitionTestCase):
         self.user_partition.scheme.current_group = groups[1]    # pylint: disable=no-member
         group2_id = self.partition_service.get_user_group_id_for_partition(user_partition_id)
         self.assertEqual(group2_id, groups[1].id)    # pylint: disable=no-member
+
+
+class TestPartitionSchemeExtensions(TestCase):
+    """
+    Ensure that locally-defined scheme extensions are correctly plugged in.
+    """
+
+    def test_get_scheme(self):
+        self.assertEqual(UserPartition.get_scheme('random'), RandomUserPartitionScheme)
+        self.assertEqual(UserPartition.get_scheme('cohort'), CohortPartitionScheme)
+        with self.assertRaisesRegexp(UserPartitionError, 'Unrecognized scheme'):
+            UserPartition.get_scheme('doesnt exist')
