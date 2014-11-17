@@ -1,11 +1,17 @@
-(function(Backbone, $, _, gettext, NotificationModel, NotificationView) {
+/**
+ * A view for uploading a file. Currently only single-file upload is supported. To support multiple-file
+ * uploads, the HTML input must specifiy "multiple" and the notification messaging needs to be changed
+ * to support the display of multiple status messages.
+ *
+ * The associated model is FileUploaderModel.
+ */
+(function(Backbone, $, _, gettext, interpolate_text, NotificationModel, NotificationView) {
     // Requires JQuery-File-Upload.
     var FileUploaderView = Backbone.View.extend({
 
         initialize: function(options) {
             this.template = _.template($('#file-upload-tpl').text());
             this.options = options;
-
         },
 
         render: function() {
@@ -22,14 +28,15 @@
         },
 
         successHandler: function (event, data) {
+            var file = data.files[0].name;
             var notificationModel;
             if (this.options.successNotification) {
-                notificationModel = this.options.successNotification(event, data);
+                notificationModel = this.options.successNotification(file, event, data);
             }
             else {
                 notificationModel = new NotificationModel({
                     type: "confirmation",
-                    title: gettext("Your upload succeeded.")
+                    title: interpolate_text(gettext("Your upload of '{file}' succeeded."), {file: file})
                 });
             }
             var notification = new NotificationView({
@@ -40,9 +47,10 @@
         },
 
         errorHandler: function (event, data) {
+            var file = data.files[0].name;
             var notificationModel;
             if (this.options.errorNotification) {
-                notificationModel = this.options.errorNotification(event, data);
+                notificationModel = this.options.errorNotification(file, event, data);
             }
             else {
                 var message = null;
@@ -54,7 +62,7 @@
                         }
                     }
                     if (!message) {
-                        message = gettext("Your upload failed.");
+                        message = interpolate_text(gettext("Your upload of '{file}' failed."), {file: file});
                     }
                 notificationModel = new NotificationModel({
                     type: "error",
@@ -70,4 +78,4 @@
     });
 
     this.FileUploaderView = FileUploaderView;
-}).call(this, Backbone, $, _, gettext, NotificationModel, NotificationView);
+}).call(this, Backbone, $, _, gettext, interpolate_text, NotificationModel, NotificationView);

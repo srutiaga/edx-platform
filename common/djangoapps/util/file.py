@@ -3,6 +3,7 @@ Utility methods for working with files.
 """
 
 from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext
 from django.core import exceptions
 from django.core.files.storage import get_storage_class
 import os
@@ -44,7 +45,11 @@ def store_uploaded_file(request, file_key, allowed_file_types, base_storage_file
     file_extension = os.path.splitext(uploaded_file.name)[1].lower()
     if not file_extension in allowed_file_types:
         file_types = "', '".join(allowed_file_types)
-        msg = _("Allowed file types are '{file_types}'.").format(file_types=file_types)
+        msg = ungettext(
+            "The file must end with the extension '{file_types}'.",
+            "The file must end with one of the following extensions: '{file_types}'.",
+            len(allowed_file_types)).format(file_types=file_types
+        )
         raise exceptions.PermissionDenied(msg)
 
     stored_file_name = base_storage_filename + file_extension

@@ -37,10 +37,11 @@
             var fileUploaderView = new FileUploaderView({
                 model: fileUploaderModel,
                 el: this.$('.csv-upload'),
-                successNotification: function () {
+                successNotification: function (file, event, data) {
+                    var message = interpolate_text(gettext("Your file '{file}' has been uploaded. Go check... in 5 minutes."), {file: file});
                     return new NotificationModel({
                         type: "confirmation",
-                        title: gettext("Your file has been uploaded. Go check... in 5 minutes.")
+                        title: message
                     });
                 }
             }).render();
