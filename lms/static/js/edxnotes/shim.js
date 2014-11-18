@@ -20,6 +20,8 @@
             };
         }
 
+        Annotator.frozenSrc = null;
+
         /**
          * Modifies Annotator.highlightRange to add a "tabindex=0" attribute
          * to the <span class="annotator-hl"> markup that encloses the note.
@@ -40,13 +42,13 @@
         Annotator.prototype.destroy = _.compose(
             Annotator.prototype.destroy,
             function () {
-                if (this.isFrozen) {
-                    _.invoke(
-                        _.filter(Annotator._instances, function(instance){
-                            return instance !== this;
-                        }), 'unfreeze'
-                    );
-                    $(document).off('click.edxnotes:freeze');
+                // We are destroying the instance that has the popup visible, revert to default,
+                // unfreeze all instances and set their isFrozen to false
+                if (this === Annotator.frozenSr) {
+                    _.invoke(Annotator._instances, 'unfreeze');
+                } else {
+                    // Unfreeze only this instance and unbound associated 'click.edxnotes:freeze' handler
+                    $(document).off('click.edxnotes:freeze'+this.uid);
                     this.isFrozen = false;
                 }
             }
@@ -79,6 +81,7 @@
             },
 
             isFrozen: false,
+            uid: _.uniqueId(),
 
             onHighlightClick: function (event) {
                 Annotator.Util.preventEventDefault(event);
@@ -87,6 +90,7 @@
                     event.stopPropagation();
                     this.onHighlightMouseover.call(this, event);
                 }
+                Annotator.freezeSrc = this;
                 _.invoke(Annotator._instances, 'freeze');
             },
 
@@ -94,6 +98,7 @@
                 event.stopPropagation();
                 Annotator.Util.preventEventDefault(event);
                 if (!$(event.target).is('.annotator-delete')) {
+                    Annotator.freezeSrc = this;
                     _.invoke(Annotator._instances, 'freeze');
                 }
             },
@@ -103,7 +108,7 @@
                     // Remove default events
                     this.removeEvents();
                     this.viewer.element.unbind('mouseover mouseout');
-                    $(document).on('click.edxnotes:freeze', this.unfreeze.bind(this));
+                    $(document).on('click.edxnotes:freeze'+this.uid, this.unfreeze.bind(this));
                     this.isFrozen = true;
                 }
             },
@@ -119,6 +124,7 @@
                     this.viewer.hide();
                     $(document).off('click.edxnotes:freeze');
                     this.isFrozen = false;
+                    Annotator.freezeSrc = null;
                 }
             }
         });
