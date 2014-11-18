@@ -13,6 +13,7 @@ from xmodule.seq_module import SequenceDescriptor
 from xmodule.studio_editable import StudioEditableModule, StudioEditableDescriptor
 from xmodule.x_module import XModule, module_attr, STUDENT_VIEW
 from xmodule.validation import StudioValidation, StudioValidationMessage
+from xmodule.modulestore.inheritance import UserPartitionList
 
 from lxml import etree
 
@@ -57,6 +58,13 @@ class SplitTestFields(object):
         help=_("This name is used for organizing your course content, but is not shown to students."),
         scope=Scope.settings,
         default=_("Content Experiment")
+    )
+
+    # Specified here so we can see what the value set at the course-level is.
+    user_partitions = UserPartitionList(
+        help=_("The list of group configurations for partitioning students in content experiments."),
+        default=[],
+        scope=Scope.settings
     )
 
     user_partition_id = Integer(
