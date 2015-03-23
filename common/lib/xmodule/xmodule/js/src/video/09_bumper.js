@@ -4,9 +4,9 @@
 define(
 'video/09_bumper.js',
 ['video/01_initialize.js'],
-function (initialize) {
+function (Initialize) {
     /**
-     * @desc VideoCaption module exports a function.
+     * VideoBumper module exports a function.
      *
      * @type {function}
      * @access public
@@ -28,6 +28,7 @@ function (initialize) {
         this.element = element;
         this.state = state;
         this.state.videoBumper = this;
+        _.bindAll(this, 'showMainVideo');
         this.renderElements();
         this.bindHandlers();
         this.initialize();
@@ -36,55 +37,60 @@ function (initialize) {
 
     VideoBumper.prototype = {
         initialize: function () {
+            // TODO: Remove this line
             this.controls = $('.video-controls', this.state.el).clone();
-            this.state = $.extend(true, {}, this.state, {
-                // videoType: 'html5',
-                metadata: {
-                    savedVideoPosition: 0,
-                    speed: '1.0',
-                    startTime: 0,
-                    endTime: null,
-                    streams: [],
-                    sources: ['http://www.w3schools.com/html/mov_bbb.mp4']
-                }
-            });
 
-            this.state.modules = this.state.bumper_modules;
-            initialize(this.state, this.element);
+            // TODO: Remove this line;
+            this.state.metadata.sources = [
+                'http://www.w3schools.com/html/mov_bbb.mp4'
+            ];
+            Initialize(this.state, this.element);
         },
 
-        /**
-        * @desc Initiate rendering of elements, and set their initial configuration.
-        *
-        */
-        renderElements: function () {
-            var state = this.state;
-            $('.add-fullscreen, .volume, .speeds, .slider', state.el).css('visibility', 'hidden');
-        },
-
-        /**
-        * @desc Bind any necessary function callbacks to DOM events (click,
-        *     mousemove, etc.).
-        *
-        */
-        bindHandlers: function () {
-            this.state.el.on('ended', this.onDone.bind(this));
+        showMainVideo: function () {
+            this.destroy();
+            this.dfd.resolve();
         },
 
         canShowVideo: function () {
-            return this.dfd.resolve();
+            return (this.dfd.isResolved() || this.dfd.isRejected());
         },
 
-        onDone: function () {
-            var state = this.state;
-            if (state.videoPlayer.player.destroy) {
-                state.videoPlayer.player.destroy();
-            } else {
-                $('video', state.el).remove();
-            }
+        skip: function () {
+            this.element.trigger('skip');
+        },
 
-            $('.video-controls', this.state.el).replaceWith(this.controls);
-            this.dfd.resolve();
+        skipAndDoNotShowAgain: function () {
+            this.skip();
+            // TODO: send request.
+        },
+
+        /**
+         * Initiate rendering of elements, and set their initial configuration.
+         */
+        renderElements: function () {
+            // TODO: Replace this line.
+            $('.add-fullscreen, .volume, .speeds, .slider', this.state.el).css('visibility', 'hidden');
+        },
+
+        /**
+         * Bind any necessary function callbacks to DOM events (click, mousemove, etc.).
+         *
+         */
+        bindHandlers: function () {
+            var events = ['ended', 'skip', 'error'].join(' ');
+            this.element.on(events, this.showMainVideo);
+        },
+
+        destroy: function () {
+            var player = this.state.videoPlayer.player;
+            if (player && player.destroy) {
+                player.destroy();
+            } else {
+                $('video', this.element).remove();
+            }
+            // TODO: Remove this line
+            $('.video-controls', this.element).replaceWith(this.controls);
         }
     };
 

@@ -459,28 +459,6 @@ function (VideoPlayer, VideoStorage, i18n) {
     }
 
 
-
-    function canShowVideo (state) {
-        var dfd = $.Deferred(), player;
-        state = $.extend(true, {}, state, {
-            videoType: 'html5',
-            config: {
-                savedVideoPosition: 0,
-                speed: '1.0',
-                startTime: 0,
-                endTime: null,
-                autoplay: true,
-                sources: ['https://s3.amazonaws.com/edx-course-videos/edx-intro/edX-FA12-cware-1_100.mp4']
-            }
-        });
-
-        // player = VideoPlayer(state);
-        // _renderElements(state);
-        state.el.on('ended', dfd.resolve);
-
-        return dfd.promise().resolve();
-    }
-
     // function initialize(element)
     // The function set initial configuration and preparation.
 
@@ -532,8 +510,6 @@ function (VideoPlayer, VideoStorage, i18n) {
         this.speed = this.speedToString(
             this.config.speed || this.config.generalSpeed
         );
-
-        // canShowVideo(state).always(function () {
 
         if (!(_parseYouTubeIDs(this))) {
 
@@ -609,8 +585,6 @@ function (VideoPlayer, VideoStorage, i18n) {
                     _renderElements(self);
                 });
             }
-
-        // });
 
         return __dfd__.promise();
     }

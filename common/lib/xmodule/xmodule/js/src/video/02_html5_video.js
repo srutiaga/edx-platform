@@ -110,6 +110,12 @@ function () {
                     });
         };
 
+        Player.prototype.onError = function (event) {
+            if ($.isFunction(this.config.events.onError)) {
+                this.config.events.onError(event.target.error.code);
+            }
+        };
+
         return Player;
 
         /*
@@ -226,6 +232,8 @@ function () {
 
             lastSource = this.videoEl.find('source').last();
             lastSource.on('error', this.showErrorMessage.bind(this));
+
+            this.videoEl.on('error', this.onError);
 
             if (/iP(hone|od)/i.test(isTouch[0])) {
                 this.videoEl.prop('controls', true);

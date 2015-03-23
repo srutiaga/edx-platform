@@ -76,6 +76,20 @@
                     $(window).off('unload', previousState.saveState);
                 }
 
+                var getCleanState = function (state) {
+                    return $.extend(true, {}, state, {
+                        metadata: {
+                            savedVideoPosition: 0,
+                            speed: '1.0',
+                            startTime: 0,
+                            endTime: null,
+
+                            streams: [],
+                            sources: []
+                        }
+                    });
+                },
+
                 var el = $(element).find('.video');
                 state = {
                     el: el,
@@ -102,15 +116,17 @@
                     VideoContextMenu
                 ];
 
-                state.bumper_modules = [
+                var bumper_state = getCleanState(state);
+
+                bumper_state.modules = [
                     VideoControl,
                     VideoCommands,
                     VideoCaption
                 ];
 
-                state.youtubeXhr = youtubeXhr;
+                state.youtubeXhr = bumper_state.youtubeXhr = youtubeXhr;
 
-                VideoBumper(state, element).done(function () {
+                VideoBumper(bumper_state, element).done(function () {
                     state.metadata.autoplay = true;
                     initialize(state, element);
                 });

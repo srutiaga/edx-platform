@@ -31,6 +31,7 @@ function (HTML5Video, Resizer) {
             log: log,
             onCaptionSeek: onSeek,
             onEnded: onEnded,
+            onError: onError,
             onPause: onPause,
             onPlay: onPlay,
             runTimer: runTimer,
@@ -149,7 +150,8 @@ function (HTML5Video, Resizer) {
                 videoSources: state.config.sources,
                 events: {
                     onReady:       state.videoPlayer.onReady,
-                    onStateChange: state.videoPlayer.onStateChange
+                    onStateChange: state.videoPlayer.onStateChange,
+                    onError: state.videoPlayer.onError
                 }
             });
 
@@ -174,7 +176,8 @@ function (HTML5Video, Resizer) {
                     onReady: state.videoPlayer.onReady,
                     onStateChange: state.videoPlayer.onStateChange,
                     onPlaybackQualityChange: state.videoPlayer
-                        .onPlaybackQualityChange
+                        .onPlaybackQualityChange,
+                    onError: state.videoPlayer.onError
                 }
             });
 
@@ -292,7 +295,8 @@ function (HTML5Video, Resizer) {
                 onReady: state.videoPlayer.onReady,
                 onStateChange: state.videoPlayer.onStateChange,
                 onPlaybackQualityChange: state.videoPlayer
-                    .onPlaybackQualityChange
+                    .onPlaybackQualityChange,
+                onError: state.videoPlayer.onError
             }
         });
 
@@ -756,6 +760,10 @@ function (HTML5Video, Resizer) {
                 }
                 break;
         }
+    }
+
+    function onError (code) {
+        this.el.trigger('error', [code]);
     }
 
     function figureOutStartEndTime(duration) {
