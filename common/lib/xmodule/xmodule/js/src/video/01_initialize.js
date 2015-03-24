@@ -653,7 +653,7 @@ function (VideoPlayer, VideoStorage, i18n) {
     //
     //     Create a separate array of available speeds.
     function parseSpeed() {
-        this.speeds = _.values(this.keys).sort();
+        this.speeds = _.values(this.videos).sort();
     }
 
     function setSpeed(newSpeed, updateStorage) {
@@ -694,7 +694,7 @@ function (VideoPlayer, VideoStorage, i18n) {
             ].join(''),
             dataType: 'jsonp',
             timeout: this.config.ytTestTimeout,
-            success: (_.isFunction(callback)) ? callback : null
+            success: _.isFunction(callback) ? callback : null
         });
     }
 
