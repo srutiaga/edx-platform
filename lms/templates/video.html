@@ -1,53 +1,13 @@
 <%! from django.utils.translation import ugettext as _ %>
-<%! import json %>
 
 % if display_name is not UNDEFINED and display_name is not None:
     <h2>${display_name}</h2>
 % endif
 
-<%
-  metadata = {
-    "streams": youtube_streams,
-    "sub": sub if sub else '',
-    "autoplay": autoplay if autoplay else False,
-    "sources": sources,
-    "saveStateUrl": ajax_url,
-    "captionDataDir": data_dir,
-    "showCaptions": show_captions,
-    "generalSpeed": general_speed,
-    "speed": speed,
-    "savedVideoPosition": saved_video_position,
-    "start": start,
-    "end": end,
-    "transcriptLanguage": transcript_language,
-    "transcriptLanguages": json.loads(transcript_languages),
-    "autoplay": autoplay,
-    "ytTestTimeout": yt_test_timeout,
-    "ytApiUrl": yt_api_url,
-    "ytTestUrl": yt_test_url,
-    "transcriptTranslationUrl": transcript_translation_url,
-    "transcriptAvailableTranslationsUrl": transcript_available_translations_url,
-
-
-    ## For now, the option "data-autohide-html5" is hard coded. This option
-    ## either enables or disables autohiding of controls and captions on mouse
-    ## inactivity. If set to true, controls and captions will autohide for
-    ## HTML5 sources (non-YouTube) after a period of mouse inactivity over the
-    ## whole video. When the mouse moves (or a key is pressed while any part of
-    ## the video player is focused), the captions and controls will be shown
-    ## once again.
-    ##
-    ## There is no option in the "Advanced Editor" to set this option. However,
-    ## this option will have an effect if changed to "True". The code on
-    ## front-end exists.
-    "autohideHtml5": False
-  }
-
-%>
 <div
     id="video_${id}"
     class="video closed"
-    data-metadata='${json.dumps(metadata)}'
+    data-metadata=${metadata}
     tabindex="-1"
 >
     <div class="focus_grabber first"></div>

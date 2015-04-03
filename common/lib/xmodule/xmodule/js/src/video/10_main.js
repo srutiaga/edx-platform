@@ -88,7 +88,7 @@
                             sources: []
                         }
                     });
-                },
+                };
 
                 var el = $(element).find('.video');
                 state = {
