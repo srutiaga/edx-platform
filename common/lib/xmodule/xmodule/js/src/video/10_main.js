@@ -67,7 +67,7 @@
 
             window.Video = function (element) {
                 var previousState = window.Video.previousState,
-                    state;
+                    el = $(element).find('.video'), state;
 
                 // Check for existance of previous state, uninitialize it if necessary, and create a new state. Store
                 // new state for future invocation of this module consturctor function.
@@ -90,7 +90,6 @@
                     });
                 };
 
-                var el = $(element).find('.video');
                 state = {
                     el: el,
                     metadata: el.data('metadata')
