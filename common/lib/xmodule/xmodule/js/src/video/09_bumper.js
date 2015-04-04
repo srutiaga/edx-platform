@@ -25,7 +25,7 @@ function (Initialize) {
         }
 
         this.dfd = $.Deferred();
-        this.element = element;
+        this.element = $(element);
         this.state = state;
         this.state.videoBumper = this;
         _.bindAll(this, 'showMainVideo');
