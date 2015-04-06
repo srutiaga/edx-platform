@@ -17,6 +17,10 @@ function() {
             return new VolumeControl(state, i18n);
         }
 
+        _.bindAll(this, 'keyDownHandler', 'updateVolumeSilently',
+            'onVolumeChangeHandler', 'openMenu', 'closeMenu',
+            'toggleMuteHandler', 'keyDownButtonHandler'
+        );
         this.state = state;
         this.state.videoVolumeControl = this;
         this.i18n = i18n;
@@ -32,6 +36,31 @@ function() {
         max: 100,
         /** Step to increase/decrease volume level via keyboard. */
         step: 20,
+
+        destroy: function () {
+            this.volumeSlider.slider('destroy');
+            this.state.el.find('iframe').removeAttr('tabindex');
+            this.a11y.destroy();
+            this.cookie = this.a11y = null;
+            this.closeMenu();
+
+            this.state.el
+                .off('play.volume')
+                .off({
+                    'keydown': this.keyDownHandler,
+                    'volumechange': this.onVolumeChangeHandler
+                });
+            this.el.off({
+                'mouseenter': this.openMenu,
+                'mouseleave': this.closeMenu
+            });
+            this.button.off({
+                'mousedown': this.toggleMuteHandler,
+                'keydown': this.keyDownButtonHandler,
+                'focus': this.openMenu,
+                'blur': this.closeMenu
+            });
+        },
 
         /** Initializes the module. */
         initialize: function() {
@@ -85,20 +114,20 @@ function() {
         /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
             this.state.el.on({
-                'keydown': this.keyDownHandler.bind(this),
-                'play': _.once(this.updateVolumeSilently.bind(this)),
-                'volumechange': this.onVolumeChangeHandler.bind(this)
+                'keydown': this.keyDownHandler,
+                'play.volume': _.once(this.updateVolumeSilently),
+                'volumechange': this.onVolumeChangeHandler
             });
             this.el.on({
-                'mouseenter': this.openMenu.bind(this),
-                'mouseleave': this.closeMenu.bind(this)
+                'mouseenter': this.openMenu,
+                'mouseleave': this.closeMenu
             });
             this.button.on({
                 'click': false,
-                'mousedown': this.toggleMuteHandler.bind(this),
-                'keydown': this.keyDownButtonHandler.bind(this),
-                'focus': this.openMenu.bind(this),
-                'blur': this.closeMenu.bind(this)
+                'mousedown': this.toggleMuteHandler,
+                'keydown': this.keyDownButtonHandler,
+                'focus': this.openMenu,
+                'blur': this.closeMenu
             });
         },
 
@@ -343,6 +372,10 @@ function() {
     };
 
     Accessibility.prototype = {
+        destroy: function () {
+            this.liveRegion.remove();
+        },
+
         /** Initializes the module. */
         initialize: function() {
             this.liveRegion = $('<div />', {

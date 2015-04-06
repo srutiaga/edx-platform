@@ -24,6 +24,10 @@ function (Sjson, AsyncProcess) {
             return new VideoCaption(state);
         }
 
+        _.bindAll(this, 'toggle', 'onMouseEnter', 'onMouseLeave', 'onMovement',
+            'onContainerMouseEnter', 'onContainerMouseLeave', 'fetchCaption',
+            'onResize', 'pause', 'play', 'onCaptionUpdate', 'onCaptionHandler'
+        );
         this.state = state;
         this.state.videoCaption = this;
         this.renderElements();
@@ -32,6 +36,48 @@ function (Sjson, AsyncProcess) {
     };
 
     VideoCaption.prototype = {
+        destroy: function () {
+            var state = this.state,
+                events = [
+                    'mouseover', 'mouseout', 'mousedown', 'click', 'focus', 'blur',
+                    'keydown'
+                ].join(' ');
+
+            this.hideSubtitlesEl.off('click', this.toggle);
+            this.subtitlesEl
+                .off({
+                    mouseenter: this.onMouseEnter,
+                    mouseleave: this.onMouseLeave,
+                    mousemove: this.onMovement,
+                    mousewheel: this.onMovement,
+                    DOMMouseScroll: this.onMovement,
+                    scroll: state.videoControl.showControls
+                })
+                .off(events, 'li[data-index]', this.onCaptionHandler)
+                .empty().css({maxHeight: 'auto'});
+
+            this.container
+                .off({
+                    mouseenter: this.onContainerMouseEnter,
+                    mouseleave: this.onContainerMouseLeave
+                })
+                .empty();
+
+            state.el
+                .off({
+                    'caption:fetch': this.fetchCaption,
+                    'caption:resize': this.onResize,
+                    'caption:update': this.onCaptionUpdate,
+                    'ended': this.pause,
+                    'fullscreen': this.onResize,
+                    'pause': this.pause,
+                    'play': this.play
+                })
+                .removeClass('is-captions-rendered');
+
+            this.loaded = false;
+            this.rendered = false;
+        },
         /**
         * @desc Initiate rendering of elements, and set their initial configuration.
         *
@@ -64,65 +110,39 @@ function (Sjson, AsyncProcess) {
         *
         */
         bindHandlers: function () {
-            var self = this,
-                state = this.state,
+            var state = this.state,
                 events = [
                     'mouseover', 'mouseout', 'mousedown', 'click', 'focus', 'blur',
                     'keydown'
                 ].join(' ');
 
-            // Change context to VideoCaption of event handlers using `bind`.
-            this.hideSubtitlesEl.on('click', this.toggle.bind(this));
+            this.hideSubtitlesEl.on('click', this.toggle);
             this.subtitlesEl
                 .on({
-                    mouseenter: this.onMouseEnter.bind(this),
-                    mouseleave: this.onMouseLeave.bind(this),
-                    mousemove: this.onMovement.bind(this),
-                    mousewheel: this.onMovement.bind(this),
-                    DOMMouseScroll: this.onMovement.bind(this)
+                    mouseenter: this.onMouseEnter,
+                    mouseleave: this.onMouseLeave,
+                    mousemove: this.onMovement,
+                    mousewheel: this.onMovement,
+                    DOMMouseScroll: this.onMovement
                 })
-                .on(events, 'li[data-index]', function (event) {
-                    switch (event.type) {
-                        case 'mouseover':
-                        case 'mouseout':
-                            self.captionMouseOverOut(event);
-                            break;
-                        case 'mousedown':
-                            self.captionMouseDown(event);
-                            break;
-                        case 'click':
-                            self.captionClick(event);
-                            break;
-                        case 'focusin':
-                            self.captionFocus(event);
-                            break;
-                        case 'focusout':
-                            self.captionBlur(event);
-                            break;
-                        case 'keydown':
-                            self.captionKeyDown(event);
-                            break;
-                    }
-                });
+                .on(events, 'li[data-index]', this.onCaptionHandler);
 
             if (this.showLanguageMenu) {
                 this.container.on({
-                    mouseenter: this.onContainerMouseEnter.bind(this),
-                    mouseleave: this.onContainerMouseLeave.bind(this)
+                    mouseenter: this.onContainerMouseEnter,
+                    mouseleave: this.onContainerMouseLeave
                 });
             }
 
             state.el
                 .on({
-                    'caption:fetch': this.fetchCaption.bind(this),
-                    'caption:resize': this.onResize.bind(this),
-                    'caption:update': function (event, time) {
-                        self.updatePlayTime(time);
-                    },
-                    'ended': this.pause.bind(this),
-                    'fullscreen': this.onResize.bind(this),
-                    'pause': this.pause.bind(this),
-                    'play': this.play.bind(this)
+                    'caption:fetch': this.fetchCaption,
+                    'caption:resize': this.onResize,
+                    'caption:update': this.onCaptionUpdate,
+                    'ended': this.pause,
+                    'fullscreen': this.onResize,
+                    'pause': this.pause,
+                    'play': this.play
                 });
 
             if ((state.videoType === 'html5') && (state.config.autohideHtml5)) {
@@ -130,6 +150,33 @@ function (Sjson, AsyncProcess) {
             }
         },
 
+        onCaptionUpdate: function (event, time) {
+            this.updatePlayTime(time);
+        },
+
+        onCaptionHandler: function (event) {
+            switch (event.type) {
+                case 'mouseover':
+                case 'mouseout':
+                    this.captionMouseOverOut(event);
+                    break;
+                case 'mousedown':
+                    this.captionMouseDown(event);
+                    break;
+                case 'click':
+                    this.captionClick(event);
+                    break;
+                case 'focusin':
+                    this.captionFocus(event);
+                    break;
+                case 'focusout':
+                    this.captionBlur(event);
+                    break;
+                case 'keydown':
+                    this.captionKeyDown(event);
+                    break;
+            }
+        },
 
         /**
         * @desc Opens language menu.

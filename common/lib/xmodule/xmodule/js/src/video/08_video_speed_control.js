@@ -16,6 +16,10 @@ function (Iterator) {
             return new SpeedControl(state);
         }
 
+        _.bindAll(this, 'onSetSpeed', 'onRenderSpeed', 'clickLinkHandler',
+            'keyDownLinkHandler', 'mouseEnterHandler', 'mouseLeaveHandler',
+            'clickMenuHandler', 'keyDownMenuHandler'
+        );
         this.state = state;
         this.state.videoSpeedControl = this;
         this.initialize();
@@ -24,6 +28,30 @@ function (Iterator) {
     };
 
     SpeedControl.prototype = {
+        destroy: function () {
+            this.speedsContainer;
+
+            this.el.off({
+                'mouseenter': this.mouseEnterHandler,
+                'mouseleave': this.mouseLeaveHandler,
+                'click': this.clickMenuHandler,
+                'keydown': this.keyDownMenuHandler
+            });
+
+            this.speedsContainer
+                .off({
+                    click: this.clickLinkHandler,
+                    keydown: this.keyDownLinkHandler
+                }, 'a.speed-link')
+                .empty();
+
+            this.state.el.off({
+                'speed:set': this.onSetSpeed,
+                'speed:render': this.onRenderSpeed
+            });
+            this.closeMenu(true);
+        },
+
         /** Initializes the module. */
         initialize: function () {
             var state = this.state;
@@ -77,31 +105,33 @@ function (Iterator) {
          * mousemove, etc.).
          */
         bindHandlers: function () {
-            var self = this;
-
             // Attach various events handlers to the speed menu button.
             this.el.on({
-                'mouseenter': this.mouseEnterHandler.bind(this),
-                'mouseleave': this.mouseLeaveHandler.bind(this),
-                'click': this.clickMenuHandler.bind(this),
-                'keydown': this.keyDownMenuHandler.bind(this)
+                'mouseenter': this.mouseEnterHandler,
+                'mouseleave': this.mouseLeaveHandler,
+                'click': this.clickMenuHandler,
+                'keydown': this.keyDownMenuHandler
             });
 
             // Attach click and keydown event handlers to the individual speed
             // entries.
             this.speedsContainer.on({
-                click: this.clickLinkHandler.bind(this),
-                keydown: this.keyDownLinkHandler.bind(this)
+                click: this.clickLinkHandler,
+                keydown: this.keyDownLinkHandler
             }, 'a.speed-link');
 
             this.state.el.on({
-                'speed:set': function (event, speed) {
-                    self.setSpeed(speed, true);
-                },
-                'speed:render': function (event, speeds, currentSpeed) {
-                    self.render(speeds, currentSpeed);
-                }
+                'speed:set': this.onSetSpeed,
+                'speed:render': this.onRenderSpeed
             });
+        },
+
+        onSetSpeed: function (event, speed) {
+            this.setSpeed(speed, true);
+        },
+
+        onRenderSpeed: function (event, speeds, currentSpeed) {
+            this.render(speeds, currentSpeed);
         },
 
         /**
@@ -133,7 +163,7 @@ function (Iterator) {
             // element to have clicks close the menu when they happen
             // outside of it.
             if (bindEvent) {
-                $(window).on('click.speedMenu', this.clickMenuHandler.bind(this));
+                $(window).on('click.speedMenu', this.clickMenuHandler);
             }
 
             this.el.addClass('is-opened');
