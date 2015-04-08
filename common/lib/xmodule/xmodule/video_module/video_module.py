@@ -293,6 +293,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
         }
 
         return self.system.render_template('video.html', {
+            'enable_video_bumper': settings.FEATURES.get('ENABLE_VIDEO_BUMPER', False),
             'metadata': json.dumps(metadata),
             'branding_info': branding_info,
             'cdn_eval': cdn_eval,

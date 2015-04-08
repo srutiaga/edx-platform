@@ -142,6 +142,9 @@ FEATURES = {
 
     # Enable course reruns, which will always use the split modulestore
     'ALLOW_COURSE_RERUNS': True,
+
+    # Show video bumper in Studio
+    'ENABLE_VIDEO_BUMPER': False,
 }
 
 ENABLE_JASMINE = False

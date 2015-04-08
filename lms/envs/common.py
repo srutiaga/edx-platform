@@ -371,6 +371,9 @@ FEATURES = {
         'TWITTER_SHARING': False,
         'TWITTER_SHARING_TEXT': None
     },
+
+    # Show video bumper in LMS
+    'ENABLE_VIDEO_BUMPER': True,
 }
 
 # Ignore static asset files on import which match this pattern

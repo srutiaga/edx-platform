@@ -115,20 +115,29 @@
                     VideoContextMenu
                 ];
 
-                var bumper_state = getCleanState(state);
+                state.youtubeXhr = youtubeXhr;
 
-                bumper_state.modules = [
-                    VideoControl,
-                    VideoCommands,
-                    VideoCaption
-                ];
+                var bumperEnabled = el.data('enable_video_bumper');
 
-                state.youtubeXhr = bumper_state.youtubeXhr = youtubeXhr;
+                if (bumperEnabled === true) {
+                    var bumper_state = getCleanState(state);
 
-                VideoBumper(bumper_state, element).done(function () {
+                    bumper_state.modules = [
+                        VideoControl,
+                        VideoCommands,
+                        VideoCaption
+                    ];
+
+                    bumper_state.youtubeXhr = youtubeXhr;
+
+                    VideoBumper(bumper_state, element).done(function () {
+                        state.metadata.autoplay = true;
+                        initialize(state, element);
+                    });
+                } else {
                     state.metadata.autoplay = true;
                     initialize(state, element);
-                });
+                }
 
                 if (!youtubeXhr) {
                     youtubeXhr = state.youtubeXhr;
