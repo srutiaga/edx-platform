@@ -310,8 +310,6 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
                 log.warning("Could not retrieve information from VAL for Bumper edx Video ID: %s.", bumper_edx_video_id)
                 enable_video_bumper = False
             else:
-                if settings.DEBUG and not bumper_sources:
-                    bumper_sources =['http://www.w3schools.com/html/mov_bbb.mp4']
                 if not bumper_sources:
                     enable_video_bumper = False
                 else:
