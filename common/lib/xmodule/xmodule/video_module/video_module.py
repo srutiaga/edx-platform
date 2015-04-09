@@ -292,25 +292,43 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'autohideHtml5': False
         }
 
-        enable_video_bumper, bumper_metadata = bool(settings.FEATURES.get('ENABLE_VIDEO_BUMPER') and getattr(self, 'video_bumper')), {}
+        enable_video_bumper, bumper_metadata = bool(
+            settings.FEATURES.get('ENABLE_VIDEO_BUMPER') and
+            getattr(self, 'video_bumper') and
+            edxval_api
+        ), {}
         if enable_video_bumper:
             bumper_settings = getattr(self, 'video_bumper')
-            edx_video_id, transcripts_settings = bumper_settings['video'], bumper_settings['transcripts']
-            bumper_metadata = {
-                # Why we dumps in video but not here?
-                'sources': ['http://www.w3schools.com/html/mov_bbb.mp4'],
+            bumper_edx_video_id, transcripts_settings = bumper_settings['video'], bumper_settings['transcripts']
 
-                # TODO: Clean up during transcripts implementation
-                # 'streams': youtube_streams or create_youtube_string(self),
-                # 'sub': self.sub,
-                # 'showCaptions': json.dumps(self.show_captions),
+            try:
+                val_profiles = ["desktop_webm", "desktop_mp4"]
+                val_video_urls = edxval_api.get_urls_for_profiles(bumper_edx_video_id, val_profiles)
+                bumper_sources = filter(None, [val_video_urls[p] for p in val_profiles])
+            except edxval_api.ValInternalError:
+                # no bumper, nothing will be showed
+                log.warning("Could not retrieve information from VAL for Bumper edx Video ID: %s.", bumper_edx_video_id)
+                enable_video_bumper = False
+            else:
+                if settings.DEBUG and not bumper_sources:
+                    bumper_sources =['http://www.w3schools.com/html/mov_bbb.mp4']
+                if not bumper_sources:
+                    enable_video_bumper = False
+                else:
+                    bumper_metadata = {
+                        # Why we dumps in video but not here?
+                        'sources': bumper_sources,
 
-                # 'transcriptLanguage': transcript_language,
-                # 'transcriptLanguages': json.dumps(sorted_languages),
+                        # TODO: Clean up during transcripts implementation
+                        # 'sub': self.sub,
+                        # 'showCaptions': json.dumps(self.show_captions),
 
-                # 'transcriptTranslationUrl': self.runtime.handler_url(self, 'transcript', 'translation').rstrip('/?'),
-                # 'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
-            }
+                        # 'transcriptLanguage': transcript_language,
+                        # 'transcriptLanguages': json.dumps(sorted_languages),
+
+                        # 'transcriptTranslationUrl': self.runtime.handler_url(self, 'transcript', 'translation').rstrip('/?'),
+                        # 'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
+                    }
 
         context = {
             'enable_video_bumper': json.dumps(enable_video_bumper),
