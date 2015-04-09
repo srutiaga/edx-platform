@@ -292,8 +292,29 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'autohideHtml5': False
         }
 
-        return self.system.render_template('video.html', {
-            'enable_video_bumper': settings.FEATURES.get('ENABLE_VIDEO_BUMPER', False),
+        enable_video_bumper, bumper_metadata = bool(settings.FEATURES.get('ENABLE_VIDEO_BUMPER') and getattr(self, 'video_bumper')), {}
+        if enable_video_bumper:
+            bumper_settings = getattr(self, 'video_bumper')
+            edx_video_id, transcripts_settings = bumper_settings['video'], bumper_settings['transcripts']
+            bumper_metadata = {
+                # Why we dumps in video but not here?
+                'sources': ['http://www.w3schools.com/html/mov_bbb.mp4'],
+
+                # TODO: Clean up during transcripts implementation
+                # 'streams': youtube_streams or create_youtube_string(self),
+                # 'sub': self.sub,
+                # 'showCaptions': json.dumps(self.show_captions),
+
+                # 'transcriptLanguage': transcript_language,
+                # 'transcriptLanguages': json.dumps(sorted_languages),
+
+                # 'transcriptTranslationUrl': self.runtime.handler_url(self, 'transcript', 'translation').rstrip('/?'),
+                # 'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
+            }
+
+        context = {
+            'enable_video_bumper': json.dumps(enable_video_bumper),
+            'bumper_metadata': json.dumps(bumper_metadata),
             'metadata': json.dumps(metadata),
             'branding_info': branding_info,
             'cdn_eval': cdn_eval,
@@ -305,7 +326,8 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'track': track_url,
             'transcript_download_format': transcript_download_format,
             'transcript_download_formats_list': self.descriptor.fields['transcript_download_format'].values,
-        })
+        }
+        return self.system.render_template('video.html', context)
 
 
 class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandlers, TabsEditingDescriptor, EmptyDataRawDescriptor):

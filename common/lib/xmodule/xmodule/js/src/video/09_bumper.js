@@ -40,10 +40,6 @@ function (Initialize) {
             // TODO: Remove this line
             this.controls = $('.video-controls', this.state.el).clone();
 
-            // TODO: Remove this line;
-            this.state.metadata.sources = [
-                'http://www.w3schools.com/html/mov_bbb.mp4'
-            ];
             Initialize(this.state, this.element);
         },
 

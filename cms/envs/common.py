@@ -144,7 +144,7 @@ FEATURES = {
     'ALLOW_COURSE_RERUNS': True,
 
     # Show video bumper in Studio
-    'ENABLE_VIDEO_BUMPER': False,
+    'ENABLE_VIDEO_BUMPER': True,
 }
 
 ENABLE_JASMINE = False

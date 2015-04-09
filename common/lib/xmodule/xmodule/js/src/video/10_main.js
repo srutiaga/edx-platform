@@ -76,16 +76,16 @@
                     $(window).off('unload', previousState.saveState);
                 }
 
-                var getCleanState = function (state) {
+                var getCleanState = function (state, metadata) {
                     return $.extend(true, {}, state, {
+                        metadata: metadata }, {
                         metadata: {
                             savedVideoPosition: 0,
                             speed: '1.0',
                             startTime: 0,
                             endTime: null,
 
-                            streams: [],
-                            sources: []
+                            streams: []
                         }
                     });
                 };
@@ -120,7 +120,9 @@
                 var bumperEnabled = el.data('enable_video_bumper');
 
                 if (bumperEnabled === true) {
-                    var bumper_state = getCleanState(state);
+
+                    var bumperMetadata = el.data('bumper_metadata'),
+                        bumper_state = getCleanState(state, bumperMetadata);
 
                     bumper_state.modules = [
                         VideoControl,
