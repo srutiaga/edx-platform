@@ -137,7 +137,6 @@
                         initialize(state, element);
                     });
                 } else {
-                    state.metadata.autoplay = true;
                     initialize(state, element);
                 }
 
