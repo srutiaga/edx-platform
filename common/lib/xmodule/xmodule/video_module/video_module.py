@@ -328,9 +328,10 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
                         # 'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
                     }
 
+        bumper_metadata = {'sources': ['http://www.w3schools.com/html/mov_bbb.mp4']}
+        enable_video_bumper = True
         context = {
-            'enable_video_bumper': json.dumps(enable_video_bumper),
-            'bumper_metadata': json.dumps(bumper_metadata),
+            'bumper_metadata': json.dumps(bumper_metadata if enable_video_bumper else None),
             'metadata': json.dumps(metadata),
             'branding_info': branding_info,
             'cdn_eval': cdn_eval,
