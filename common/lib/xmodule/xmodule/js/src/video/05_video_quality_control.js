@@ -36,6 +36,7 @@ function () {
     //     get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
         var methodsDict = {
+            destroy: destroy,
             fetchAvailableQualities: fetchAvailableQualities,
             onQualityChange: onQualityChange,
             showQualityControl: showQualityControl,
@@ -43,6 +44,14 @@ function () {
         };
 
         state.bindTo(methodsDict, state.videoQualityControl, state);
+    }
+
+    function destroy() {
+        this.videoQualityControl.el.hide();
+        this.videoQualityControl.el.off('click',
+            this.videoQualityControl.toggleQuality
+        );
+        this.el.off('.quality');
     }
 
     // function _renderElements(state)
@@ -64,9 +73,11 @@ function () {
         state.videoQualityControl.el.on('click',
             state.videoQualityControl.toggleQuality
         );
-        state.el.on('play', _.once(
+        state.el.on('play.quality', _.once(
             state.videoQualityControl.fetchAvailableQualities
         ));
+
+        state.el.on('destroy', state.videoQualityControl.destroy);
     }
 
     // ***************************************************************
@@ -141,7 +152,7 @@ function () {
         event.preventDefault();
 
         newQuality = isHD ? 'large' : 'highres';
-        
+
         this.trigger('videoPlayer.handlePlaybackQualityChange', newQuality);
     }
 

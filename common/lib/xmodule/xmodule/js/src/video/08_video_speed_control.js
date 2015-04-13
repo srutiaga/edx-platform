@@ -18,7 +18,7 @@ function (Iterator) {
 
         _.bindAll(this, 'onSetSpeed', 'onRenderSpeed', 'clickLinkHandler',
             'keyDownLinkHandler', 'mouseEnterHandler', 'mouseLeaveHandler',
-            'clickMenuHandler', 'keyDownMenuHandler'
+            'clickMenuHandler', 'keyDownMenuHandler', 'destroy'
         );
         this.state = state;
         this.state.videoSpeedControl = this;
@@ -124,6 +124,7 @@ function (Iterator) {
                 'speed:set': this.onSetSpeed,
                 'speed:render': this.onRenderSpeed
             });
+            this.el.on('destroy', this.destroy);
         },
 
         onSetSpeed: function (event, speed) {

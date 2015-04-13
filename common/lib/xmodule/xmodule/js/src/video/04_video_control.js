@@ -30,7 +30,10 @@ function () {
     //     get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
         var methodsDict = {
+            destroy: destroy,
+            enterFullScreen: enterFullScreen,
             exitFullScreenHandler: exitFullScreenHandler,
+            exitFullScreen: exitFullScreen,
             hideControls: hideControls,
             hidePlayPlaceholder: hidePlayPlaceholder,
             pause: pause,
@@ -46,6 +49,21 @@ function () {
         };
 
         state.bindTo(methodsDict, state.videoControl, state);
+    }
+
+    function destroy() {
+        this.videoControl.pause();
+        this.videoControl.exitFullScreen();
+        this.videoControl.playPauseEl.off('click', this.videoControl.togglePlayback);
+        this.videoControl.fullScreenEl.off('click', this.videoControl.toggleFullScreenHandler);
+
+        $(document).off('keyup', this.videoControl.exitFullScreenHandler);
+        this.el.off('mousemove', this.videoControl.showControls);
+        this.el.off('keydown', this.videoControl.showControls);
+
+        this.el.off('.controls');
+        this.videoControl.playPauseEl.off('.controls');
+        this.videoControl.playPlaceholder.off('.controls');
     }
 
     // function _renderElements(state)
@@ -95,7 +113,7 @@ function () {
     function _bindHandlers(state) {
         state.videoControl.playPauseEl.on('click', state.videoControl.togglePlayback);
         state.videoControl.fullScreenEl.on('click', state.videoControl.toggleFullScreenHandler);
-        state.el.on('fullscreen', function (event, isFullScreen) {
+        state.el.on('fullscreen.controls', function (event, isFullScreen) {
             var height = state.videoControl.updateControlsHeight();
 
             if (isFullScreen) {
@@ -120,17 +138,20 @@ function () {
         }
         // The state.previousFocus is used in video_speed_control to track
         // the element that had the focus before it.
-        state.videoControl.playPauseEl.on('blur', function () {
+        state.videoControl.playPauseEl.on('blur.controls', function () {
             state.previousFocus = 'playPause';
         });
 
         if (/iPad|Android/i.test(state.isTouch[0])) {
             state.videoControl.playPlaceholder
-                .on('click', function () {
+                .on('click.controls', function () {
                     state.trigger('videoPlayer.play', null);
                 });
         }
+
+        state.el.on('destroy', state.videoControl.destroy);
     }
+
     function _getControlsHeight(control) {
         return control.el.height() + 0.5 * control.sliderEl.height();
     }
@@ -141,7 +162,7 @@ function () {
     // The magic private function that makes them available and sets up their context is makeFunctionsPublic().
     // ***************************************************************
 
-    function updateControlsHeight () {
+    function updateControlsHeight() {
         this.videoControl.height = _getControlsHeight(this.videoControl);
 
         return this.videoControl.height;
@@ -259,29 +280,38 @@ function () {
         this.videoCommands.execute('toggleFullScreen');
     }
 
+    function exitFullScreen() {
+        var fullScreenClassNameEl = this.el.add(document.documentElement);
+
+        this.videoControl.fullScreenState = this.isFullScreen = false;
+        fullScreenClassNameEl.removeClass('video-fullscreen');
+        $(window).scrollTop(this.scrollPos);
+        this.videoControl.fullScreenEl
+            .attr('title', gettext('Fill browser'))
+            .text(gettext('Fill browser'));
+        this.el.trigger('fullscreen', [this.isFullScreen]);
+    }
+
+    function enterFullScreen() {
+        var fullScreenClassNameEl = this.el.add(document.documentElement);
+
+        this.scrollPos = $(window).scrollTop();
+        $(window).scrollTop(0);
+        this.videoControl.fullScreenState = this.isFullScreen = true;
+        fullScreenClassNameEl.addClass('video-fullscreen');
+        this.videoControl.fullScreenEl
+            .attr('title', gettext('Exit full browser'))
+            .text(gettext('Exit full browser'));
+        this.el.trigger('fullscreen', [this.isFullScreen]);
+    }
+
     /** Toggle fullscreen mode. */
     function toggleFullScreen() {
-        var fullScreenClassNameEl = this.el.add(document.documentElement),
-            win = $(window), text;
-
         if (this.videoControl.fullScreenState) {
-            this.videoControl.fullScreenState = this.isFullScreen = false;
-            fullScreenClassNameEl.removeClass('video-fullscreen');
-            text = gettext('Fill browser');
-            win.scrollTop(this.scrollPos);
+            this.videoControl.exitFullScreen();
         } else {
-            this.scrollPos = win.scrollTop();
-            win.scrollTop(0);
-            this.videoControl.fullScreenState = this.isFullScreen = true;
-            fullScreenClassNameEl.addClass('video-fullscreen');
-            text = gettext('Exit full browser');
+            this.videoControl.enterFullScreen();
         }
-
-        this.videoControl.fullScreenEl
-            .attr('title', text)
-            .text(text);
-
-        this.el.trigger('fullscreen', [this.isFullScreen]);
     }
 
     /**

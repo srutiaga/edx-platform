@@ -36,6 +36,7 @@ function () {
     //     these functions will get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
         var methodsDict = {
+            destroy: destroy,
             buildSlider: buildSlider,
             getRangeParams: getRangeParams,
             onSlide: onSlide,
@@ -47,6 +48,10 @@ function () {
         };
 
         state.bindTo(methodsDict, state.videoProgressSlider, state);
+    }
+
+    function destroy(state) {
+        this.videoProgressSlider.el.removeAttr('tabindex').slider('destroy');
     }
 
     // function _renderElements(state)
@@ -81,6 +86,8 @@ function () {
             'aria-valuemin': '0',
             'aria-valuenow': state.videoPlayer.currentTime
         });
+
+        state.el.on('destroy', state.videoProgressSlider.destroy);
     }
 
     // ***************************************************************

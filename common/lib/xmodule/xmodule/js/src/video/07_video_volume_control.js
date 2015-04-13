@@ -19,7 +19,7 @@ function() {
 
         _.bindAll(this, 'keyDownHandler', 'updateVolumeSilently',
             'onVolumeChangeHandler', 'openMenu', 'closeMenu',
-            'toggleMuteHandler', 'keyDownButtonHandler'
+            'toggleMuteHandler', 'keyDownButtonHandler', 'destroy'
         );
         this.state = state;
         this.state.videoVolumeControl = this;
@@ -129,6 +129,7 @@ function() {
                 'focus': this.openMenu,
                 'blur': this.closeMenu
             });
+            this.el.on('destroy', this.destroy);
         },
 
         /**

@@ -77,14 +77,12 @@
                 }
 
                 var getCleanState = function (state, metadata) {
-                    return $.extend(true, {}, state, {
-                        metadata: metadata }, {
+                    return $.extend(true, {}, state, {metadata: metadata}, {
                         metadata: {
                             savedVideoPosition: 0,
                             speed: '1.0',
                             startTime: 0,
                             endTime: null,
-
                             streams: []
                         }
                     });
@@ -116,23 +114,20 @@
                 ];
 
                 state.youtubeXhr = youtubeXhr;
+                var bumperMetadata = el.data('bumper-metadata');
 
-                var bumperEnabled = el.data('enable_video_bumper');
+                if (bumperMetadata) {
+                    var bumperState = getCleanState(state, bumperMetadata);
 
-                if (bumperEnabled === true) {
-
-                    var bumperMetadata = el.data('bumper_metadata'),
-                        bumper_state = getCleanState(state, bumperMetadata);
-
-                    bumper_state.modules = [
+                    bumperState.modules = [
+                        VideoAccessibleMenu,
                         VideoControl,
                         VideoCommands,
                         VideoCaption
                     ];
-
-                    bumper_state.youtubeXhr = youtubeXhr;
-
-                    VideoBumper(bumper_state, element).done(function () {
+                    bumperState.youtubeXhr = youtubeXhr;
+                    var bumper = new VideoBumper(initialize, bumperState, element);
+                    bumper.getPromise().done(function () {
                         state.metadata.autoplay = true;
                         initialize(state, element);
                     });
