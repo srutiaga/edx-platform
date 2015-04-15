@@ -299,6 +299,8 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
 
         bumperize(self)
 
+        bumper_metadata = {'sources': ['http://www.w3schools.com/html/mov_bbb.mp4']}
+        enable_video_bumper = True
         context = {
             'enable_video_bumper': json.dumps(self.bumper['enabled']),
             'bumper_metadata': json.dumps(self.bumper['metadata']),

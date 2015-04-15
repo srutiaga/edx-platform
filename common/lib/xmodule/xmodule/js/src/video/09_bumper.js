@@ -3,8 +3,7 @@
 // VideoCaption module.
 define(
 'video/09_bumper.js',
-['video/01_initialize.js'],
-function (Initialize) {
+[], function () {
     /**
      * VideoBumper module exports a function.
      *
@@ -19,28 +18,28 @@ function (Initialize) {
      *
      * @returns {jquery Promise}
      */
-    var VideoBumper = function (state, element) {
+    var VideoBumper = function (player, state, element) {
         if (!(this instanceof VideoBumper)) {
             return new VideoBumper(state, element);
         }
 
         this.dfd = $.Deferred();
         this.element = $(element);
+        this.player = player;
         this.state = state;
-        this.state.videoBumper = this;
         _.bindAll(this, 'showMainVideo');
         this.renderElements();
         this.bindHandlers();
         this.initialize();
-        return this.dfd.promise();
     };
 
     VideoBumper.prototype = {
         initialize: function () {
-            // TODO: Remove this line
-            this.controls = $('.video-controls', this.state.el).clone();
+            this.player(this.state, this.element);
+        },
 
-            Initialize(this.state, this.element);
+        getPromise: function () {
+            return this.dfd.promise();
         },
 
         showMainVideo: function () {
@@ -58,16 +57,13 @@ function (Initialize) {
 
         skipAndDoNotShowAgain: function () {
             this.skip();
-            // TODO: send request.
+            // TODO: send a request.
         },
 
         /**
          * Initiate rendering of elements, and set their initial configuration.
          */
-        renderElements: function () {
-            // TODO: Replace this line.
-            $('.add-fullscreen, .volume, .speeds, .slider', this.state.el).css('visibility', 'hidden');
-        },
+        renderElements: function () {},
 
         /**
          * Bind any necessary function callbacks to DOM events (click, mousemove, etc.).
@@ -79,14 +75,9 @@ function (Initialize) {
         },
 
         destroy: function () {
-            var player = this.state.videoPlayer.player;
-            if (player && player.destroy) {
-                player.destroy();
-            } else {
-                $('video', this.element).remove();
+            if (_.isFunction(this.state.videoPlayer.destroy)) {
+                this.state.videoPlayer.destroy();
             }
-            // TODO: Remove this line
-            $('.video-controls', this.element).replaceWith(this.controls);
         }
     };
 

@@ -15,6 +15,7 @@ function (HTML5Video, Resizer) {
             return dfd.promise();
         },
         methodsDict = {
+            destroy: destroy,
             duration: duration,
             handlePlaybackQualityChange: handlePlaybackQualityChange,
 
@@ -311,6 +312,17 @@ function (HTML5Video, Resizer) {
     // keyword) is the 'state' object. The magic private function that makes
     // them available and sets up their context is makeFunctionsPublic().
     // ***************************************************************
+
+    function destroy() {
+        var player = this.videoPlayer.player;
+        this.videoPlayer.stopTimer();
+        this.videoPlayer.pause();
+        this.el.trigger('destroy');
+        if (player && _.isFunction(player.destroy)) {
+            player.destroy();
+        }
+        this.el.off('speedchange volumechange volumechange:silent play.silent');
+    }
 
     function pause() {
         if (this.videoPlayer.player.pauseVideo) {
