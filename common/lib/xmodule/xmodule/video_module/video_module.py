@@ -37,6 +37,7 @@ from xmodule.exceptions import NotFoundError
 
 from .transcripts_utils import VideoTranscriptsMixin
 from .video_utils import create_youtube_string, get_video_from_cdn
+from bumper_utils import bumperize
 from .video_xfields import VideoFields
 from .video_handlers import VideoStudentViewHandlers, VideoStudioViewHandlers
 
@@ -132,9 +133,13 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
     ]}
     js_module_name = "Video"
 
-    def get_transcripts_for_student(self):
+    def get_transcripts_for_student(self, transcripts, bumper=False):
         """Return transcript information necessary for rendering the XModule student view.
         This is more or less a direct extraction from `get_html`.
+
+        Args:
+            bumper (boolean) Return transcripts information for video bumper
+
         Returns:
             Tuple of (track_url, transcript_language, sorted_languages)
             track_url -> subtitle download url
@@ -142,31 +147,31 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             sorted_languages -> dictionary of available transcript languages
         """
         track_url = None
-        if self.download_track:
+        if self.download_track and not bumper:
             if self.track:
                 track_url = self.track
             elif self.sub or self.transcripts:
                 track_url = self.runtime.handler_url(self, 'transcript', 'download').rstrip('/?')
 
-        if not self.transcripts:
+        if not transcripts and not bumper:
             transcript_language = u'en'
             languages = {'en': 'English'}
         else:
-            transcript_language = self.get_default_transcript_language()
+            transcript_language = self.get_default_transcript_language(transcripts)
 
             native_languages = {lang: label for lang, label in settings.LANGUAGES if len(lang) == 2}
             languages = {
                 lang: native_languages.get(lang, display)
                 for lang, display in settings.ALL_LANGUAGES
-                if lang in self.transcripts
+                if lang in transcripts
             }
 
-            if self.sub:
+            if self.sub and not bumper:
                 languages['en'] = 'English'
 
         # OrderedDict for easy testing of rendered context in tests
         sorted_languages = sorted(languages.items(), key=itemgetter(1))
-        if 'table' in self.transcripts:
+        if 'table' in transcripts:
             sorted_languages.insert(0, ('table', 'Table of Contents'))
 
         sorted_languages = OrderedDict(sorted_languages)
@@ -232,7 +237,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             elif self.html5_sources:
                 download_video_link = self.html5_sources[0]
 
-        track_url, transcript_language, sorted_languages = self.get_transcripts_for_student()
+        track_url, transcript_language, sorted_languages = self.get_transcripts_for_student(self.transcripts)
 
         # CDN_VIDEO_URLS is only to be used here and will be deleted
         # TODO(ali@edx.org): Delete this after the CDN experiment has completed.
@@ -267,7 +272,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'start': self.start_time.total_seconds(),
             'end': self.end_time.total_seconds(),
             'transcriptLanguage': transcript_language,
-            'transcriptLanguages': json.dumps(sorted_languages),
+            'transcriptLanguages': sorted_languages,
 
             # TODO: Later on the value 1500 should be taken from some global
             # configuration setting field.
@@ -292,45 +297,11 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'autohideHtml5': False
         }
 
-        enable_video_bumper, bumper_metadata = bool(
-            settings.FEATURES.get('ENABLE_VIDEO_BUMPER') and
-            getattr(self, 'video_bumper') and
-            edxval_api
-        ), {}
-        if enable_video_bumper:
-            bumper_settings = getattr(self, 'video_bumper')
-            bumper_edx_video_id, transcripts_settings = bumper_settings['video'], bumper_settings['transcripts']
-
-            try:
-                val_profiles = ["desktop_webm", "desktop_mp4"]
-                val_video_urls = edxval_api.get_urls_for_profiles(bumper_edx_video_id, val_profiles)
-                bumper_sources = filter(None, [val_video_urls[p] for p in val_profiles])
-            except edxval_api.ValInternalError:
-                # no bumper, nothing will be showed
-                log.warning("Could not retrieve information from VAL for Bumper edx Video ID: %s.", bumper_edx_video_id)
-                enable_video_bumper = False
-            else:
-                if not bumper_sources:
-                    enable_video_bumper = False
-                else:
-                    bumper_metadata = {
-                        # Why we dumps in video but not here?
-                        'sources': bumper_sources,
-
-                        # TODO: Clean up during transcripts implementation
-                        # 'sub': self.sub,
-                        # 'showCaptions': json.dumps(self.show_captions),
-
-                        # 'transcriptLanguage': transcript_language,
-                        # 'transcriptLanguages': json.dumps(sorted_languages),
-
-                        # 'transcriptTranslationUrl': self.runtime.handler_url(self, 'transcript', 'translation').rstrip('/?'),
-                        # 'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
-                    }
+        bumperize(self)
 
         context = {
-            'enable_video_bumper': json.dumps(enable_video_bumper),
-            'bumper_metadata': json.dumps(bumper_metadata),
+            'enable_video_bumper': json.dumps(self.bumper['enabled']),
+            'bumper_metadata': json.dumps(self.bumper['metadata']),
             'metadata': json.dumps(metadata),
             'branding_info': branding_info,
             'cdn_eval': cdn_eval,
@@ -344,6 +315,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'transcript_download_formats_list': self.descriptor.fields['transcript_download_format'].values,
         }
         return self.system.render_template('video.html', context)
+
 
 
 class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandlers, TabsEditingDescriptor, EmptyDataRawDescriptor):

@@ -73,7 +73,7 @@ class VideoStudentViewHandlers(object):
 
         raise NotFoundError('Unexpected dispatch type')
 
-    def translation(self, youtube_id):
+    def translation(self, youtube_id, bumper=False):
         """
         This is called to get transcript file for specific language.
 
@@ -82,7 +82,7 @@ class VideoStudentViewHandlers(object):
         Logic flow:
 
         If youtube_id doesn't exist, we have a video in HTML5 mode. Otherwise,
-        video video in Youtube or Flash modes.
+        video in Youtube or Flash modes.
 
         if youtube:
             If english -> give back youtube_id subtitles:
@@ -131,10 +131,11 @@ class VideoStudentViewHandlers(object):
             return sjson_transcript
         else:
             # HTML5 case
-            if self.transcript_language == 'en':
+            if self.transcript_language == 'en' and not bumper:
                 return Transcript.asset(self.location, self.sub).data
             else:
-                return get_or_create_sjson(self)
+                transcripts = self.transripts if not bumper else self.bumper_transcripts
+                return get_or_create_sjson(self, transcripts, bumper)
 
     def get_static_transcript(self, request):
         """
@@ -197,9 +198,15 @@ class VideoStudentViewHandlers(object):
                     Returns list of languages, for which transcript files exist.
                     For 'en' check if SJSON exists. For non-`en` check if SRT file exists.
         """
+        bumper=False
         if dispatch.startswith('translation'):
-
-            language = dispatch.replace('translation', '').strip('/')
+            if dispatch.startswith('translation_bumper'):
+                # if we here, then bumper is available,
+                self.bumper_transcripts = getattr(self, 'video_bumper')['transcripts']
+                bumper=True
+                language = dispatch.replace('translation_bumper', '').strip('/')
+            else:
+                language = dispatch.replace('translation', '').strip('/')
 
             if not language:
                 log.info("Invalid /translation request: no language.")
@@ -213,7 +220,7 @@ class VideoStudentViewHandlers(object):
                 self.transcript_language = language
 
             try:
-                transcript = self.translation(request.GET.get('videoId', None))
+                transcript = self.translation(request.GET.get('videoId', None), bumper=bumper)
             except (TypeError, NotFoundError) as ex:
                 log.info(ex.message)
                 # Try to return static URL redirection as last resort
@@ -246,8 +253,12 @@ class VideoStudentViewHandlers(object):
                 )
                 response.content_type = transcript_mime_type
 
-        elif dispatch == 'available_translations':
-            available_translations = self.available_translations()
+        elif dispatch.startswith('available_translations'):
+            if dispatch.startswith('available_translations_bumper'):
+                # if we here, then bumper is available,
+                self.bumper_transcripts = getattr(self, 'video_bumper')['transcripts']
+                bumper=True
+            available_translations = self.available_translations(bumper=bumper)
             if available_translations:
                 response = Response(json.dumps(available_translations))
                 response.content_type = 'application/json'
@@ -258,7 +269,6 @@ class VideoStudentViewHandlers(object):
             response = Response(status=404)
 
         return response
-
 
 class VideoStudioViewHandlers(object):
     """
