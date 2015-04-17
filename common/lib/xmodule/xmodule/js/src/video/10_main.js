@@ -48,27 +48,17 @@
             'video/09_play_placeholder.js',
             'video/09_play_pause_control.js',
             'video/09_play_skip_control.js',
+            'video/09_skip_control.js',
             'video/09_bumper.js',
             'video/10_commands.js',
             'video/095_video_context_menu.js'
         ],
         function (
-            initialize,
-            FocusGrabber,
-            VideoAccessibleMenu,
-            VideoControl,
-            VideoFullScreen,
-            VideoQualityControl,
-            VideoProgressSlider,
-            VideoVolumeControl,
-            VideoSpeedControl,
-            VideoCaption,
-            VideoPlayPlaceholder,
-            VideoPlayPauseControl,
-            VideoPlaySkipControl,
-            VideoBumper,
-            VideoCommands,
-            VideoContextMenu
+            initialize, FocusGrabber, VideoAccessibleMenu, VideoControl,
+            VideoFullScreen, VideoQualityControl, VideoProgressSlider,
+            VideoVolumeControl, VideoSpeedControl, VideoCaption,
+            VideoPlayPlaceholder, VideoPlayPauseControl, VideoPlaySkipControl,
+            VideoSkipControl, VideoBumper, VideoCommands, VideoContextMenu
         ) {
             var youtubeXhr = null,
                 oldVideo = window.Video;
@@ -109,19 +99,10 @@
                 window.Video.previousState = state;
 
                 state.modules = [
-                    FocusGrabber,
-                    VideoAccessibleMenu,
-                    VideoControl,
-                    VideoPlayPlaceholder,
-                    VideoPlayPauseControl,
-                    VideoProgressSlider,
-                    VideoSpeedControl,
-                    VideoVolumeControl,
-                    VideoQualityControl,
-                    VideoFullScreen,
-                    VideoCaption,
-                    VideoCommands,
-                    VideoContextMenu
+                    FocusGrabber, VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder,
+                    VideoPlayPauseControl, VideoProgressSlider, VideoSpeedControl,
+                    VideoVolumeControl, VideoQualityControl, VideoFullScreen,
+                    VideoCaption, VideoCommands, VideoContextMenu
                 ];
 
                 state.youtubeXhr = youtubeXhr;
@@ -131,15 +112,12 @@
                     var bumperState = getCleanState(state, bumperMetadata);
 
                     bumperState.modules = [
-                        VideoAccessibleMenu,
-                        VideoControl,
-                        VideoPlayPlaceholder,
-                        VideoPlaySkipControl,
-                        VideoCaption,
-                        VideoVolumeControl,
-                        VideoCommands
+                        VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder,
+                        VideoPlaySkipControl, VideoSkipControl, VideoCaption,
+                        VideoVolumeControl, VideoCommands
                     ];
                     bumperState.youtubeXhr = youtubeXhr;
+                    bumperState.isBumper = true;
                     var bumper = new VideoBumper(initialize, bumperState, element);
                     bumper.getPromise().done(function () {
                         state.metadata.autoplay = true;

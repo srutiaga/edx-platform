@@ -17,7 +17,7 @@ function() {
             return new PlayPlaceholder(state, i18n);
         }
 
-        _.bindAll(this, 'hide', 'show', 'onClick', 'destroy');
+        _.bindAll(this, 'onClick', 'hide', 'show', 'destroy');
         this.state = state;
         this.state.videoPlayPlaceholder = this;
         this.i18n = i18n;
@@ -32,22 +32,26 @@ function() {
             this.el.off({
                 'click': this.onClick,
                 'play': this.hide,
+                'ended': this.show,
                 'pause': this.show
             });
+            this.hide();
             delete this.state.videoPlayPlaceholder;
         },
 
-        isSupportedDevice: function () {
-            return /iPad|Android/i.test(this.state.isTouch[0]) && !this.state.isYoutubeType();
+        shouldBeShown: function () {
+            return (/iPad|Android/i.test(this.state.isTouch[0]) &&
+                !this.state.isYoutubeType()) ||
+                this.state.isBumper;
         },
 
         /** Initializes the module. */
         initialize: function() {
-            if (!this.isSupportedDevice()) {
+            if (!this.shouldBeShown()) {
                 return false;
             }
 
-            this.el = this.state.find('.btn-play');
+            this.el = this.state.el.find('.btn-play');
             this.bindHandlers();
             this.show();
         },
@@ -57,14 +61,15 @@ function() {
             this.el.on({
                 'click': this.onClick,
                 'play': this.hide,
+                'ended': this.show,
                 'pause': this.show
             });
             this.state.el.on('destroy', this.destroy);
         },
 
-        onClick: function (event) {
-            event.preventDefault();
-            this.state.videoCommands.execute('togglePlayback');
+        onClick: function () {
+            this.state.videoCommands.execute('play');
+            this.hide();
         },
 
         hide: function () {

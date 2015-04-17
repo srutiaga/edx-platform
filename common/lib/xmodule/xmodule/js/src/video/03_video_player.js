@@ -314,8 +314,6 @@ function (HTML5Video, Resizer) {
 
     function destroy() {
         var player = this.videoPlayer.player;
-        this.videoPlayer.stopTimer();
-        this.videoPlayer.pause();
         this.el.removeClass([
             'is-unstarted', 'is-playing', 'is-paused', 'is-buffered',
             'is-ended', 'is-cued'
@@ -324,6 +322,7 @@ function (HTML5Video, Resizer) {
         // this.el.off('initialize metadata_received speedchange volumechange volumechange:silent play.silent caption:resize');
         this.el.off();
         this.resizer.destroy();
+        this.videoPlayer.stopTimer();
         if (player && _.isFunction(player.destroy)) {
             player.destroy();
         }
@@ -566,7 +565,6 @@ function (HTML5Video, Resizer) {
             }
         );
 
-        this.trigger('videoControl.pause', null);
         this.trigger('videoProgressSlider.notifyThroughHandleEnd', {
             end: true
         });

@@ -17,7 +17,7 @@ function() {
             return new PlayPauseControl(state, i18n);
         }
 
-        _.bindAll(this, 'play', 'pause', 'onClick', 'onBlur', 'destroy');
+        _.bindAll(this, 'play', 'pause', 'onClick', 'destroy');
         this.state = state;
         this.state.videoPlayPauseControl = this;
         this.i18n = i18n;
@@ -58,18 +58,14 @@ function() {
         /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
             this.el.on({
-                'click': this.onClick,
-                'blur': this.onBlur
+                'click': this.onClick
             });
             this.state.el.on({
                 'play': this.play,
+                'ended': this.pause,
                 'pause': this.pause,
                 'destroy': this.destroy
             });
-        },
-
-        onBlur: function () {
-            this.state.previousFocus = 'playPause';
         },
 
         onClick: function (event) {

@@ -105,7 +105,7 @@ function (Iterator) {
 
             speedsContainer.html(speedsList.join(''));
             this.speedLinks = new Iterator(speedsContainer.find('.speed-link'));
-            this.state.el.find('.secondary-controls').append(this.el);
+            this.state.el.find('.secondary-controls').prepend(this.el);
         },
 
         /**

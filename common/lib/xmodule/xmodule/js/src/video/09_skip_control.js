@@ -1,49 +1,48 @@
 (function(define) {
 'use strict';
-// VideoPlaySkipControl module.
+// VideoSkipControl module.
 define(
-'video/09_play_skip_control.js', [],
+'video/09_skip_control.js', [],
 function() {
     /**
      * Video volume control module.
-     * @exports video/09_play_skip_control.js
+     * @exports video/09_skip_control.js
      * @constructor
      * @param {Object} state The object containing the state of the video
      * @param {Object} i18n The object containing strings with translations.
      * @return {jquery Promise}
      */
-    var PlaySkipControl = function(state, i18n) {
-        if (!(this instanceof PlaySkipControl)) {
-            return new PlaySkipControl(state, i18n);
+    var SkipControl = function(state, i18n) {
+        if (!(this instanceof SkipControl)) {
+            return new SkipControl(state, i18n);
         }
 
-        _.bindAll(this, 'play', 'onClick', 'destroy');
+        _.bindAll(this, 'onPlay', 'onClick', 'destroy');
         this.state = state;
-        this.state.videoPlaySkipControl = this;
+        this.state.videoSkipControl = this;
         this.i18n = i18n;
         this.initialize();
 
         return $.Deferred().resolve().promise();
     };
 
-    PlaySkipControl.prototype = {
+    SkipControl.prototype = {
         template: [
-            '<a class="video_control play" href="#" title="',
-                gettext('Play'), '" role="button" aria-disabled="false">',
-                gettext('Play'),
+            '<a class="video_control skip" href="#" title="',
+                gettext('Do not show again'), '" role="button" aria-disabled="false">',
+                gettext('Do not show again'),
             '</a>'
         ].join(''),
 
         destroy: function () {
             this.el.remove();
             this.state.el.off('destroy', this.destroy);
-            delete this.state.videoPlaySkipControl;
+            delete this.state.videoSkipControl;
         },
 
         /** Initializes the module. */
         initialize: function() {
             this.el = $(this.template);
-            this.render();
             this.bindHandlers();
         },
 
@@ -52,36 +51,28 @@ function() {
          * initial configuration.
          */
         render: function() {
-            this.state.el.find('.vcr').prepend(this.el);
+            this.state.el.find('.vcr a').after(this.el);
         },
 
         /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
             this.el.on('click', this.onClick);
             this.state.el.on({
-                'play': this.play,
+                'play': this.onPlay,
                 'destroy': this.destroy
             });
         },
 
         onClick: function (event) {
             event.preventDefault();
-            if (this.state.isPlaying) {
-                this.state.videoCommands.execute('skip');
-            } else {
-                this.state.videoCommands.execute('play');
-            }
+            this.state.videoCommands.execute('skip', true);
         },
 
-        play: function () {
-            this.el
-                .attr('title', gettext('Skip')).text(gettext('Skip'))
-                .removeClass('play').addClass('skip');
-            // Disable possibility to pause the video.
-            this.state.el.find('video').off('click');
-        }
+        onPlay: _.once(function () {
+            this.render();
+        })
     };
 
-    return PlaySkipControl;
+    return SkipControl;
 });
 }(RequireJS.define));
