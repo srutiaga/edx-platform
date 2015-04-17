@@ -23,11 +23,12 @@ define(
             return new VideoBumper(state, element);
         }
 
+        _.bindAll(this, 'showMainVideo', 'destroy');
         this.dfd = $.Deferred();
         this.element = $(element);
         this.player = player;
         this.state = state;
-        _.bindAll(this, 'showMainVideo');
+        this.state.videoBumper = this;
         this.renderElements();
         this.bindHandlers();
         this.initialize();
@@ -75,6 +76,8 @@ define(
         },
 
         destroy: function () {
+            var events = ['ended', 'skip', 'error'].join(' ');
+            this.element.off(events);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
                 this.state.videoPlayer.destroy();
             }

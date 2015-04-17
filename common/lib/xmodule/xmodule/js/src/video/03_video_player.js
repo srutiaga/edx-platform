@@ -163,7 +163,6 @@ function (HTML5Video, Resizer) {
                     videoHeight = player[0].videoHeight || player.height();
 
                 _resize(state, videoWidth, videoHeight);
-
                 _updateVcrAndRegion(state);
             }, false);
 
@@ -265,7 +264,7 @@ function (HTML5Video, Resizer) {
         }
 
         $(window).on('resize', _.debounce(function () {
-            state.trigger('videoControl.updateControlsHeight', null);
+            state.trigger('videoFullScreen.updateControlsHeight', null);
             state.el.trigger('caption:resize');
             state.resizer.align();
         }, 100));
@@ -317,11 +316,18 @@ function (HTML5Video, Resizer) {
         var player = this.videoPlayer.player;
         this.videoPlayer.stopTimer();
         this.videoPlayer.pause();
+        this.el.removeClass([
+            'is-unstarted', 'is-playing', 'is-paused', 'is-buffered',
+            'is-ended', 'is-cued'
+        ].join(' '));
         this.el.trigger('destroy');
+        // this.el.off('initialize metadata_received speedchange volumechange volumechange:silent play.silent caption:resize');
+        this.el.off();
+        this.resizer.destroy();
         if (player && _.isFunction(player.destroy)) {
             player.destroy();
         }
-        this.el.off('speedchange volumechange volumechange:silent play.silent');
+        delete this.videoPlayer;
     }
 
     function pause() {
@@ -578,6 +584,7 @@ function (HTML5Video, Resizer) {
     }
 
     function onPause() {
+        this.isPlaying = false;
         this.videoPlayer.log(
             'pause_video',
             {
@@ -587,12 +594,12 @@ function (HTML5Video, Resizer) {
 
         this.videoPlayer.stopTimer();
 
-        this.trigger('videoControl.pause', null);
         this.saveState(true);
         this.el.trigger('pause', arguments);
     }
 
     function onPlay() {
+        this.isPlaying = true;
         this.videoPlayer.log(
             'play_video',
             {
@@ -601,7 +608,6 @@ function (HTML5Video, Resizer) {
         );
 
         this.videoPlayer.runTimer();
-        this.trigger('videoControl.play', null);
         this.trigger('videoProgressSlider.notifyThroughHandleEnd', {
             end: false
         });

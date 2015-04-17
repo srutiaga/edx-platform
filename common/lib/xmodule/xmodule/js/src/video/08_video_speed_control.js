@@ -28,9 +28,18 @@ function (Iterator) {
     };
 
     SpeedControl.prototype = {
-        destroy: function () {
-            this.speedsContainer;
+        template: [
+            '<div class="speeds menu-container">',
+                '<a class="speed-button" href="#" title="',
+                    gettext('Speeds'), '" role="button" aria-disabled="false">',
+                    '<span class="label">', gettext('Speed'), '</span>',
+                    '<span class="value"></span>',
+                '</a>',
+              '<ol class="video-speeds menu" role="menu"></ol>',
+            '</div>'
+        ].join(''),
 
+        destroy: function () {
             this.el.off({
                 'mouseenter': this.mouseEnterHandler,
                 'mouseleave': this.mouseLeaveHandler,
@@ -50,26 +59,27 @@ function (Iterator) {
                 'speed:render': this.onRenderSpeed
             });
             this.closeMenu(true);
+            this.el.remove();
+            this.el = this.speedsContainer = this.speedButton = null;
+            delete this.state.videoSpeedControl;
         },
 
         /** Initializes the module. */
         initialize: function () {
             var state = this.state;
 
-            this.el = state.el.find('.speeds');
-            this.speedsContainer = this.el.find('.video-speeds');
-            this.speedButton = this.el.find('.speed-button');
-
             if (!this.isPlaybackRatesSupported(state)) {
-                this.el.remove();
                 console.log(
                     '[Video info]: playbackRate is not supported.'
                 );
 
                 return false;
             }
-
+            this.el = $(this.template);
+            this.speedsContainer = this.el.find('.video-speeds');
+            this.speedButton = this.el.find('.speed-button');
             this.render(state.speeds, state.speed);
+            this.setSpeed(state.speed, true, true);
             this.bindHandlers();
 
             return true;
@@ -79,13 +89,11 @@ function (Iterator) {
          * Creates any necessary DOM elements, attach them, and set their,
          * initial configuration.
          * @param {array} speeds List of speeds available for the player.
-         * @param {string|number} currentSpeed Current speed for the player.
          */
-        render: function (speeds, currentSpeed) {
-            var self = this,
-                speedsContainer = this.speedsContainer,
+        render: function (speeds) {
+            var speedsContainer = this.speedsContainer,
                 reversedSpeeds = speeds.concat().reverse(),
-                speedsList = $.map(reversedSpeeds, function (speed, index) {
+                speedsList = $.map(reversedSpeeds, function (speed) {
                     return [
                         '<li data-speed="', speed, '" role="presentation">',
                             '<a class="speed-link" href="#" role="menuitem" tabindex="-1">',
@@ -97,7 +105,7 @@ function (Iterator) {
 
             speedsContainer.html(speedsList.join(''));
             this.speedLinks = new Iterator(speedsContainer.find('.speed-link'));
-            this.setSpeed(currentSpeed, true, true);
+            this.state.el.find('.secondary-controls').append(this.el);
         },
 
         /**
@@ -124,7 +132,7 @@ function (Iterator) {
                 'speed:set': this.onSetSpeed,
                 'speed:render': this.onRenderSpeed
             });
-            this.el.on('destroy', this.destroy);
+            this.state.el.on('destroy', this.destroy);
         },
 
         onSetSpeed: function (event, speed) {

@@ -116,6 +116,10 @@ function () {
             }
         };
 
+        Player.prototype.destroy = function () {
+            this.videoEl.remove();
+        };
+
         return Player;
 
         /*

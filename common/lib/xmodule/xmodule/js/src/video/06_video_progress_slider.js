@@ -12,6 +12,12 @@ define(
 'video/06_video_progress_slider.js',
 [],
 function () {
+    var template = [
+        '<div class="slider" title="',
+            gettext('Video position'),
+        '"></div>'
+    ].join('');
+
     // VideoProgressSlider() function - what this module "exports".
     return function (state) {
         var dfd = $.Deferred();
@@ -20,7 +26,6 @@ function () {
 
         _makeFunctionsPublic(state);
         _renderElements(state);
-        // No callbacks to DOM events (click, mousemove, etc.).
 
         dfd.resolve();
         return dfd.promise();
@@ -52,6 +57,8 @@ function () {
 
     function destroy(state) {
         this.videoProgressSlider.el.removeAttr('tabindex').slider('destroy');
+        state.el.removeClass('has-progress-slider');
+        delete this.videoProgressSlider;
     }
 
     // function _renderElements(state)
@@ -61,10 +68,19 @@ function () {
     //     via the 'state' object. Much easier to work this way - you don't
     //     have to do repeated jQuery element selects.
     function _renderElements(state) {
-        state.videoProgressSlider.el = state.videoControl.sliderEl;
+        state.videoProgressSlider.el = $(template);
 
+        state.el.find('.video-controls').prepend(state.videoProgressSlider.el);
         state.videoProgressSlider.buildSlider();
         _buildHandle(state);
+
+        // ARIA
+        // Let screen readers know that this anchor, representing the slider
+        // handle, behaves as a slider named 'video slider'.
+        state.videoProgressSlider.el.find('.ui-slider-handle').attr({
+            'role': 'slider',
+            'title': gettext('Video slider')
+        });
     }
 
     function _buildHandle(state) {
