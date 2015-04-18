@@ -62,19 +62,14 @@ function() {
             });
             this.state.el.on({
                 'play': this.play,
-                'ended': this.pause,
-                'pause': this.pause,
+                'pause ended': this.pause,
                 'destroy': this.destroy
             });
         },
 
         onClick: function (event) {
             event.preventDefault();
-            if (this.state.isPlaying) {
-                this.state.videoCommands.execute('pause');
-            } else {
-                this.state.videoCommands.execute('play');
-            }
+            this.state.videoCommands.execute('togglePlayback');
         },
 
         play: function () {

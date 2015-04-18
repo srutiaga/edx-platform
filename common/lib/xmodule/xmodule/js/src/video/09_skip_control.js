@@ -17,7 +17,7 @@ function() {
             return new SkipControl(state, i18n);
         }
 
-        _.bindAll(this, 'onPlay', 'onClick', 'destroy');
+        _.bindAll(this, 'onClick', 'render', 'destroy');
         this.state = state;
         this.state.videoSkipControl = this;
         this.i18n = i18n;
@@ -36,7 +36,7 @@ function() {
 
         destroy: function () {
             this.el.remove();
-            this.state.el.off('destroy', this.destroy);
+            this.state.el.off('.skip');
             delete this.state.videoSkipControl;
         },
 
@@ -58,19 +58,15 @@ function() {
         bindHandlers: function() {
             this.el.on('click', this.onClick);
             this.state.el.on({
-                'play': this.onPlay,
-                'destroy': this.destroy
+                'play.skip': _.once(this.render),
+                'destroy.skip': this.destroy
             });
         },
 
         onClick: function (event) {
             event.preventDefault();
             this.state.videoCommands.execute('skip', true);
-        },
-
-        onPlay: _.once(function () {
-            this.render();
-        })
+        }
     };
 
     return SkipControl;

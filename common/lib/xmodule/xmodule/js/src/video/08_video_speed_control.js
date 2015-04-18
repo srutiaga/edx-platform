@@ -47,20 +47,13 @@ function (Iterator) {
                 'keydown': this.keyDownMenuHandler
             });
 
-            this.speedsContainer
-                .off({
-                    click: this.clickLinkHandler,
-                    keydown: this.keyDownLinkHandler
-                }, 'a.speed-link')
-                .empty();
-
             this.state.el.off({
                 'speed:set': this.onSetSpeed,
                 'speed:render': this.onRenderSpeed
             });
             this.closeMenu(true);
+            this.speedsContainer.remove();
             this.el.remove();
-            this.el = this.speedsContainer = this.speedButton = null;
             delete this.state.videoSpeedControl;
         },
 
@@ -214,7 +207,7 @@ function (Iterator) {
                 this.currentSpeed = speed;
 
                 if (!silent) {
-                    this.el.trigger('speedchange', [speed]);
+                    this.el.trigger('speedchange', [speed, this.state.speed]);
                 }
             }
         },

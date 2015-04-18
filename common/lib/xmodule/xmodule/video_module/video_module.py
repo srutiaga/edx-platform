@@ -127,6 +127,8 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             resource_string(module, 'js/src/video/09_play_skip_control.js'),
             resource_string(module, 'js/src/video/09_skip_control.js'),
             resource_string(module, 'js/src/video/09_bumper.js'),
+            resource_string(module, 'js/src/video/09_save_state_plugin.js'),
+            resource_string(module, 'js/src/video/09_events_plugin.js'),
             resource_string(module, 'js/src/video/095_video_context_menu.js'),
             resource_string(module, 'js/src/video/10_commands.js'),
             resource_string(module, 'js/src/video/10_main.js')

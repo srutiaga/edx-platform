@@ -28,12 +28,11 @@ function() {
 
     PlayPlaceholder.prototype = {
         destroy: function () {
-            this.state.el.off('destroy', this.destroy);
-            this.el.off({
-                'click': this.onClick,
+            this.el.off('click', this.onClick);
+            this.state.el.on({
+                'destroy': this.destroy,
                 'play': this.hide,
-                'ended': this.show,
-                'pause': this.show
+                'ended pause': this.show
             });
             this.hide();
             delete this.state.videoPlayPlaceholder;
@@ -58,18 +57,16 @@ function() {
 
         /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
-            this.el.on({
-                'click': this.onClick,
+            this.el.on('click', this.onClick);
+            this.state.el.on({
+                'destroy': this.destroy,
                 'play': this.hide,
-                'ended': this.show,
-                'pause': this.show
+                'ended pause': this.show
             });
-            this.state.el.on('destroy', this.destroy);
         },
 
         onClick: function () {
             this.state.videoCommands.execute('play');
-            this.hide();
         },
 
         hide: function () {

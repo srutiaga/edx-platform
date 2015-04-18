@@ -13,9 +13,7 @@ define(
 [],
 function () {
     var template = [
-        '<div class="slider" title="',
-            gettext('Video position'),
-        '"></div>'
+        '<div class="slider" title="', gettext('Video position'), '"></div>'
     ].join('');
 
     // VideoProgressSlider() function - what this module "exports".
@@ -23,7 +21,6 @@ function () {
         var dfd = $.Deferred();
 
         state.videoProgressSlider = {};
-
         _makeFunctionsPublic(state);
         _renderElements(state);
 
@@ -55,9 +52,8 @@ function () {
         state.bindTo(methodsDict, state.videoProgressSlider, state);
     }
 
-    function destroy(state) {
+    function destroy() {
         this.videoProgressSlider.el.removeAttr('tabindex').slider('destroy');
-        state.el.removeClass('has-progress-slider');
         delete this.videoProgressSlider;
     }
 

@@ -77,7 +77,7 @@ define(
 
         destroy: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
-            this.element.off(events);
+            this.element.off(events, this.showMainVideo);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
                 this.state.videoPlayer.destroy();
             }

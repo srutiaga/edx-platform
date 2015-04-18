@@ -80,7 +80,7 @@ define('video/10_commands.js', [], function() {
     });
 
     togglePlaybackCommand = new Command('togglePlayback', function (state) {
-        if (state.isPlaying) {
+        if (state.videoPlayer.isPlaying()) {
             pauseCommand.execute(state);
         } else {
             playCommand.execute(state);

@@ -201,8 +201,8 @@ function (Sjson, AsyncProcess) {
         */
         onContainerMouseEnter: function (event) {
             event.preventDefault();
-            this.state.videoPlayer.log('video_show_cc_menu', {});
             $(event.currentTarget).addClass('is-opened');
+            this.state.el.trigger('language_menu:show');
         },
 
         /**
@@ -212,8 +212,8 @@ function (Sjson, AsyncProcess) {
         */
         onContainerMouseLeave: function (event) {
             event.preventDefault();
-            this.state.videoPlayer.log('video_hide_cc_menu', {});
             $(event.currentTarget).removeClass('is-opened');
+            this.state.el.trigger('language_menu:hide');
         },
 
         /**
@@ -444,11 +444,11 @@ function (Sjson, AsyncProcess) {
 
                 if (state.lang !== langCode) {
                     state.lang = langCode;
-                    state.storage.setItem('language', langCode);
                     el  .addClass('is-active')
                         .siblings('li')
                         .removeClass('is-active');
 
+                    state.el.trigger('language_menu:change', [langCode]);
                     self.fetchCaption();
                 }
             });
@@ -832,35 +832,28 @@ function (Sjson, AsyncProcess) {
         */
         hideCaptions: function (hide_captions, update_cookie) {
             var hideSubtitlesEl = this.hideSubtitlesEl,
-                state = this.state,
-                type, text;
+                state = this.state, text;
 
             if (typeof update_cookie === 'undefined') {
                 update_cookie = true;
             }
 
             if (hide_captions) {
-                type = 'hide_transcript';
                 state.captionsHidden = true;
                 state.el.addClass('closed');
                 text = gettext('Turn on captions');
+                this.state.el.trigger('captions:hide');
             } else {
-                type = 'show_transcript';
                 state.captionsHidden = false;
                 state.el.removeClass('closed');
                 this.scrollCaption();
                 text = gettext('Turn off captions');
+                this.state.el.trigger('captions:show');
             }
 
             hideSubtitlesEl
                 .attr('title', text)
                 .text(gettext(text));
-
-            if (state.videoPlayer) {
-                state.videoPlayer.log(type, {
-                    currentTime: state.videoPlayer.currentTime
-                });
-            }
 
             if (state.resizer) {
                 if (state.isFullScreen) {

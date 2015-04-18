@@ -50,6 +50,8 @@
             'video/09_play_skip_control.js',
             'video/09_skip_control.js',
             'video/09_bumper.js',
+            'video/09_save_state_plugin.js',
+            'video/09_events_plugin.js',
             'video/10_commands.js',
             'video/095_video_context_menu.js'
         ],
@@ -58,22 +60,14 @@
             VideoFullScreen, VideoQualityControl, VideoProgressSlider,
             VideoVolumeControl, VideoSpeedControl, VideoCaption,
             VideoPlayPlaceholder, VideoPlayPauseControl, VideoPlaySkipControl,
-            VideoSkipControl, VideoBumper, VideoCommands, VideoContextMenu
+            VideoSkipControl, VideoBumper, VideoSaveStatePlugin,
+            VideoEventsPlugin, VideoCommands, VideoContextMenu
         ) {
             var youtubeXhr = null,
                 oldVideo = window.Video;
 
             window.Video = function (element) {
-                var previousState = window.Video.previousState,
-                    el = $(element).find('.video'), state;
-
-                // Check for existance of previous state, uninitialize it if necessary, and create a new state. Store
-                // new state for future invocation of this module consturctor function.
-                if (previousState && previousState.videoPlayer) {
-                    previousState.saveState(true);
-                    $(window).off('unload', previousState.saveState);
-                }
-
+                var el = $(element).find('.video'), state;
                 var getCleanState = function (state, metadata) {
                     return $.extend(true, {}, state, {metadata: metadata}, {
                         metadata: {
@@ -90,19 +84,13 @@
                     el: el,
                     metadata: el.data('metadata')
                 };
-                // Because this constructor can be called multiple times on a single page (when the user switches
-                // verticals, the page doesn't reload, but the content changes), we must will check each time if there
-                // is a previous copy of 'state' object. If there is, we will make sure that copy exists cleanly. We
-                // have to do this because when verticals switch, the code does not handle any Xmodule JS code that is
-                // running - it simply removes DOM elements from the page. Any functions that were running during this,
-                // and that will run afterwards (expecting the DOM elements to be present) must be stopped by hand.
-                window.Video.previousState = state;
 
                 state.modules = [
                     FocusGrabber, VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder,
                     VideoPlayPauseControl, VideoProgressSlider, VideoSpeedControl,
                     VideoVolumeControl, VideoQualityControl, VideoFullScreen,
-                    VideoCaption, VideoCommands, VideoContextMenu
+                    VideoCaption, VideoCommands, VideoContextMenu, VideoSaveStatePlugin,
+                    VideoEventsPlugin
                 ];
 
                 state.youtubeXhr = youtubeXhr;
@@ -132,6 +120,14 @@
                 }
 
                 el.data('video-player-state', state);
+
+                var onSequenceChange = function onSequenceChange () {
+                    if (state && state.videoPlayer) {
+                        state.videoPlayer.destroy();
+                    }
+                    $('.sequence').off('sequence:change', onSequenceChange);
+                };
+                $('.sequence').on('sequence:change', onSequenceChange);
 
                 // Because the 'state' object is only available inside this closure, we will also make it available to
                 // the caller by returning it. This is necessary so that we can test Video with Jasmine.

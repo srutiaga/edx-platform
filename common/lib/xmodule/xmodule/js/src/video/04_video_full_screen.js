@@ -40,6 +40,7 @@ function () {
             enter: enter,
             exitHandler: exitHandler,
             exit: exit,
+            onFullscreenChange: onFullscreenChange,
             toggle: toggle,
             toggleHandler: toggleHandler,
             updateControlsHeight: updateControlsHeight
@@ -49,9 +50,15 @@ function () {
     }
 
     function destroy() {
-        this.videoFullScreen.exit();
-        this.videoFullScreen.fullScreenEl.off('click', this.videoFullScreen.toggleHandler);
         $(document).off('keyup', this.videoFullScreen.exitHandler);
+        this.videoFullScreen.fullScreenEl.remove();
+        this.el.off({
+            'fullscreen': this.videoFullScreen.onFullscreenChange,
+            'destroy': this.videoFullScreen.destroy
+        });
+        if (this.isFullScreen) {
+            this.videoFullScreen.exit();
+        }
         delete this.videoFullScreen;
     }
 
@@ -73,25 +80,11 @@ function () {
     //     Bind any necessary function callbacks to DOM events (click, mousemove, etc.).
     function _bindHandlers(state) {
         state.videoFullScreen.fullScreenEl.on('click', state.videoFullScreen.toggleHandler);
-        state.el.on('fullscreen.controls', function (event, isFullScreen) {
-            var height = state.videoFullScreen.updateControlsHeight();
-
-            if (isFullScreen) {
-                state.resizer
-                    .delta
-                    .substract(height, 'height')
-                    .setMode('both');
-
-            } else {
-                state.resizer
-                    .delta
-                    .reset()
-                    .setMode('width');
-            }
+        state.el.on({
+            'fullscreen': state.videoFullScreen.onFullscreenChange,
+            'destroy': state.videoFullScreen.destroy
         });
-
         $(document).on('keyup', state.videoFullScreen.exitHandler);
-        state.el.on('destroy', state.videoFullScreen.destroy);
     }
 
     function _getControlsHeight(controls, slider) {
@@ -103,6 +96,23 @@ function () {
     // These are available via the 'state' object. Their context ('this' keyword) is the 'state' object.
     // The magic private function that makes them available and sets up their context is makeFunctionsPublic().
     // ***************************************************************
+
+    function onFullscreenChange (event, isFullScreen) {
+        var height = this.videoFullScreen.updateControlsHeight();
+
+        if (isFullScreen) {
+            this.resizer
+                .delta
+                .substract(height, 'height')
+                .setMode('both');
+
+        } else {
+            this.resizer
+                .delta
+                .reset()
+                .setMode('width');
+        }
+    }
 
     function updateControlsHeight() {
         var controls = this.el.find('.video-controls'),

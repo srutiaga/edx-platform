@@ -41,10 +41,12 @@ function () {
     }
 
     function destroy() {
-        this.el.off('mousemove', this.videoControl.showControls);
-        this.el.off('keydown', this.videoControl.showControls);
-
-        this.el.off('.controls');
+        this.el.off({
+            'mousemove': this.videoControl.showControls,
+            'keydown': this.videoControl.showControls,
+            'destroy': this.videoControl.destroy
+        });
+        this.el.off('controls');
         delete this.videoControl;
     }
 
@@ -70,8 +72,10 @@ function () {
     //     Bind any necessary function callbacks to DOM events (click, mousemove, etc.).
     function _bindHandlers(state) {
         if ((state.videoType === 'html5') && (state.config.autohideHtml5)) {
-            state.el.on('mousemove', state.videoControl.showControls);
-            state.el.on('keydown', state.videoControl.showControls);
+            state.el.on({
+                'mousemove': state.videoControl.showControls,
+                'keydown': state.videoControl.showControls
+            });
         }
 
         state.el.on('destroy', state.videoControl.destroy);
@@ -107,13 +111,12 @@ function () {
             }
 
             this.controlHideTimeout = setTimeout(this.videoControl.hideControls, this.videoControl.fadeOutTimeout);
-
             this.controlShowLock = false;
         }
     }
 
     function hideControls() {
-        var _this;
+        var _this = this;
 
         this.controlHideTimeout = null;
 
@@ -122,12 +125,8 @@ function () {
         }
 
         this.controlState = 'hiding';
-
-        _this = this;
-
         this.videoControl.el.fadeOut(this.videoControl.fadeOutTimeout, function () {
             _this.controlState = 'invisible';
-
             // If the focus was on the video control or the volume control,
             // then we must make sure to close these dialogs. Otherwise, after
             // next autofocus, these dialogs will be open, but the focus will

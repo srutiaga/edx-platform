@@ -66,7 +66,7 @@ function() {
 
         onClick: function (event) {
             event.preventDefault();
-            if (this.state.isPlaying) {
+            if (this.state.videoPlayer.isPlaying()) {
                 this.state.videoCommands.execute('skip');
             } else {
                 this.state.videoCommands.execute('play');

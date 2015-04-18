@@ -71,7 +71,6 @@ function (VideoPlayer, VideoStorage, i18n) {
         isYoutubeType: isYoutubeType,
         parseSpeed: parseSpeed,
         parseYoutubeStreams: parseYoutubeStreams,
-        saveState: saveState,
         setPlayerMode: setPlayerMode,
         setSpeed: setSpeed,
         speedToString: speedToString,
@@ -145,9 +144,7 @@ function (VideoPlayer, VideoStorage, i18n) {
                     _youtubeApiDeferred.resolve();
                 }
 
-                window.YT.ready(function () {
-                    onYTApiReady();
-                });
+                window.YT.ready(onYTApiReady);
             } else {
                 // There is only one global variable window.onYouTubeIframeAPIReady which
                 // is supposed to be a function that will be called by the YouTube API
@@ -191,9 +188,7 @@ function (VideoPlayer, VideoStorage, i18n) {
                 // Attach a callback to our Deferred object to be called once the
                 // YouTube API loads.
                 window.onYouTubeIframeAPIReady.done(function () {
-                    window.YT.ready(function () {
-                        onYTApiReady();
-                    });
+                    window.YT.ready(onYTApiReady);
                 });
             }
         } else {
@@ -212,18 +207,13 @@ function (VideoPlayer, VideoStorage, i18n) {
             // callback, which will set `state.youtubeApiAvailable` to `true`.
             // If something goes wrong at this stage, `state.youtubeApiAvailable` is
             // `false`.
-            _reportToServer(state, state.youtubeApiAvailable);
+            if (!state.youtubeIsAvailable) {
+                console.log('[Video info]: YouTube API is not available.');
+            }
+            state.el.trigger('youtube_availability', [state.youtubeIsAvailable]);
         }, state.config.ytTestTimeout);
 
         $.getScript(document.location.protocol + '//' + state.config.ytApiUrl);
-    }
-
-    function _reportToServer(state, youtubeIsAvailable) {
-        if (!youtubeIsAvailable) {
-            console.log('[Video info]: YouTube API is not available.');
-        }
-
-        state.saveState(true, { youtube_is_available: youtubeIsAvailable });
     }
 
     // function _configureCaptions(state)
@@ -656,7 +646,7 @@ function (VideoPlayer, VideoStorage, i18n) {
         this.speeds = _.values(this.videos).sort();
     }
 
-    function setSpeed(newSpeed, updateStorage) {
+    function setSpeed(newSpeed) {
         // Possible speeds for each player type.
         // HTML5 =          [0.75, 1, 1.25, 1.5]
         // Youtube Flash =  [0.75, 1, 1.25, 1.5]
@@ -675,11 +665,6 @@ function (VideoPlayer, VideoStorage, i18n) {
             newSpeed = map[newSpeed];
             this.speed = _.contains(this.speeds, newSpeed) ? newSpeed : '1.0';
         }
-
-        if (updateStorage) {
-            this.storage.setItem('speed', this.speed, true);
-            this.storage.setItem('general_speed', this.speed);
-        }
     }
 
     function getVideoMetadata(url, callback) {
@@ -695,33 +680,6 @@ function (VideoPlayer, VideoStorage, i18n) {
             dataType: 'jsonp',
             timeout: this.config.ytTestTimeout,
             success: _.isFunction(callback) ? callback : null
-        });
-    }
-
-    function saveState(async, data) {
-
-        if (!($.isPlainObject(data))) {
-            data = {
-                saved_video_position: this.videoPlayer.currentTime
-            };
-        }
-
-        if (data.speed) {
-            this.storage.setItem('speed', data.speed, true);
-        }
-
-        if (data.hasOwnProperty('saved_video_position')) {
-            this.storage.setItem('savedVideoPosition', data.saved_video_position, true);
-
-            data.saved_video_position = Time.formatFull(data.saved_video_position);
-        }
-
-        $.ajax({
-            url: this.config.saveStateUrl,
-            type: 'POST',
-            async: async ? true : false,
-            dataType: 'json',
-            data: data,
         });
     }
 
