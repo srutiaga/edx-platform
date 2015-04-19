@@ -133,7 +133,7 @@ class VideoFields(object):
     )
     speed = Float(
         help=_("The last speed that the user specified for the video."),
-        scope=Scope.user_state,
+        scope=Scope.user_state
     )
     global_speed = Float(
         help=_("The default speed for the video."),

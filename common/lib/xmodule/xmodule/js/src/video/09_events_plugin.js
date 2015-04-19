@@ -30,7 +30,6 @@ function() {
 
     EventsPlugin.prototype = {
         destroy: function () {
-            this.saveState(true);
             this.state.el.off({
                 'ready': this.onReady,
                 'play': this.onPlay,
@@ -44,7 +43,6 @@ function() {
                 'captions:hide': this.onHideCaptions,
                 'destroy': this.destroy
             });
-            $(window).off('unload', this.onUnload);
             delete this.state.videoEventsPlugin;
         },
 

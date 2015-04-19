@@ -274,7 +274,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
 
             'showCaptions': json.dumps(self.show_captions),
             'generalSpeed': self.global_speed,
-            'speed': json.dumps(self.speed),
+            'speed': self.speed,
             'savedVideoPosition': self.saved_video_position.total_seconds(),
             'start': self.start_time.total_seconds(),
             'end': self.end_time.total_seconds(),
