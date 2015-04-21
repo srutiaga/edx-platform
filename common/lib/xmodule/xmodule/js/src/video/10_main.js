@@ -96,7 +96,7 @@
                 state.youtubeXhr = youtubeXhr;
                 var bumperMetadata = el.data('bumper-metadata');
 
-                if (bumperMetadata) {
+                if (!$.isEmptyObject(bumperMetadata)) {
                     var bumperState = getCleanState(state, bumperMetadata);
 
                     bumperState.modules = [
