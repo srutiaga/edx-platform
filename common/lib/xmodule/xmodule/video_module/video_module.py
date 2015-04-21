@@ -287,6 +287,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
 
             'ytApiUrl': settings.YOUTUBE['API'],
             'ytTestUrl': settings.YOUTUBE['TEST_URL'],
+            'ytImageUrl': settings.YOUTUBE['IMAGE_API'],
             'transcriptTranslationUrl': self.runtime.handler_url(self, 'transcript', 'translation').rstrip('/?'),
             'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
 

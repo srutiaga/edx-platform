@@ -1542,6 +1542,8 @@ YOUTUBE = {
             'v': 'set_youtube_id_of_11_symbols_here',
         },
     },
+
+    'IMAGE_API': 'http://img.youtube.com/vi/{youtube_id}/0.jpg',  # /maxresdefault.jpg for 1920*1080
 }
 
 ################################### APPS ######################################
