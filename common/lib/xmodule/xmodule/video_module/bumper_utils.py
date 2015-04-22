@@ -90,9 +90,9 @@ def metadata(video, sources):
     bumper_metadata = {
         # Why we dumps sources in video but not here?
         'sources': sources,
-        'showCaptions': json.dumps(bool(video.bumper['transcripts'])),
+        'showCaptions': json.dumps(bool(video.bumper['transcripts'])),  # Send it, Anton?
         'transcriptLanguage': bumper_transcript_language,
-        'transcriptLanguages': bumper_languages,
+        'transcriptLanguages': bumper_languages if video.bumper['transcripts'] else {},
         'transcriptTranslationUrl': video.runtime.handler_url(video, 'transcript', 'translation_bumper').rstrip('/?'),
         'transcriptAvailableTranslationsUrl': video.runtime.handler_url(video, 'transcript', 'available_translations_bumper').rstrip('/?'),
     }
