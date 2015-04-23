@@ -164,7 +164,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             transcript_language = u'en'
             languages = {'en': 'English'}
         else:
-            transcript_language = self.get_default_transcript_language(transcripts)
+            transcript_language = self.get_default_transcript_language(transcripts, bumper=bumper)
 
             native_languages = {lang: label for lang, label in settings.LANGUAGES if len(lang) == 2}
             languages = {

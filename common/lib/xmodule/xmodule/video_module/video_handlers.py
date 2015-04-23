@@ -135,7 +135,11 @@ class VideoStudentViewHandlers(object):
                 return Transcript.asset(self.location, self.sub).data
             else:
                 transcripts = self.transripts if not bumper else self.bumper_transcripts
-                return get_or_create_sjson(self, transcripts, bumper)
+                if transcripts:
+                    return get_or_create_sjson(self, transcripts, bumper)
+                else:
+                    log.info("No transcripts for video bumper.")
+                    raise NotFoundError
 
     def get_static_transcript(self, request):
         """
