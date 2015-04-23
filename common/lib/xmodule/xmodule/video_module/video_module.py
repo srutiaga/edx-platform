@@ -261,10 +261,11 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             cdn_eval = False
             cdn_exp_group = None
 
+        self.youtube_streams = youtube_streams or create_youtube_string(self)
         metadata = {
             'saveStateUrl': self.system.ajax_url + '/save_user_state',
             'autoplay': settings.FEATURES.get('AUTOPLAY_VIDEOS', False),
-            'streams': youtube_streams or create_youtube_string(self),
+            'streams': self.youtube_streams,
             'sub': self.sub,
             'sources': json.dumps(sources),
 
@@ -287,7 +288,6 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
 
             'ytApiUrl': settings.YOUTUBE['API'],
             'ytTestUrl': settings.YOUTUBE['TEST_URL'],
-            'ytImageUrl': settings.YOUTUBE['IMAGE_API'],
             'transcriptTranslationUrl': self.runtime.handler_url(self, 'transcript', 'translation').rstrip('/?'),
             'transcriptAvailableTranslationsUrl': self.runtime.handler_url(self, 'transcript', 'available_translations').rstrip('/?'),
 

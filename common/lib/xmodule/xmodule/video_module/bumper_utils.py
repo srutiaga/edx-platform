@@ -95,6 +95,26 @@ def metadata(video, sources):
         'transcriptLanguages': bumper_languages,
         'transcriptTranslationUrl': video.runtime.handler_url(video, 'transcript', 'translation_bumper').rstrip('/?'),
         'transcriptAvailableTranslationsUrl': video.runtime.handler_url(video, 'transcript', 'available_translations_bumper').rstrip('/?'),
+        'poster': create_links_for_poster(video),
     }
 
     return bumper_metadata
+
+
+def create_links_for_poster(video):
+    """
+    Generate poster metadata.
+
+    youtube_streams is string that contains '1.00:youtube_id'
+
+    Poster metadata is dict of youtube url for image thumbnail and edx logo
+    """
+    poster = {
+        "edx_logo": "https://www.edx.org/sites/default/files/theme/edx-logo-header.png"
+    }
+
+    if video.youtube_streams:
+        youtube_id = video.youtube_streams.split('1.00:')[1].split(',')[0]
+        poster["youtube_image_url"] = settings.YOUTUBE['IMAGE_API'].format(youtube_id=youtube_id)
+
+    return poster
