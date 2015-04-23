@@ -42,7 +42,7 @@ def bumperize(video):
 
     bumper_settings = getattr(video, 'video_bumper', None)
     try:
-        edx_video_id, transcripts = bumper_settings['video'], bumper_settings['transcripts']
+        edx_video_id, transcripts = bumper_settings['edx_video_id'], bumper_settings['transcripts']
     except TypeError, KeyError:
         video.bumper['enabled'] = False
         return

@@ -162,8 +162,8 @@ class InheritanceMixin(XBlockMixin):
         help=_(
             """Enter video bumper settings in the following format:"""
             """{"""
-            """ "video": "edx_video_ID","""
-            """ "transcripts": {'en': 'asset_path_en', 'ua': 'asset_path_ua'}, """
+            """ "edx_video_id": "edx_video_id","""
+            """ "transcripts": {"en": "b7xgknqkQk8.srt", "ua": "ua.srt"}, """
             """}"""
         ),
         scope=Scope.settings
