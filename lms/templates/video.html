@@ -26,41 +26,13 @@
           </section>
           <div class="video-player-post"></div>
           <section class="video-controls is-hidden">
-              <div class="slider" title="${_('Video position')}"></div>
               <div>
-                  <ul class="vcr">
-                      <li><a class="video_control" href="#" title="${_('Play')}" role="button" aria-disabled="false"></a></li>
-                      <li><div class="vidtime">0:00 / 0:00</div></li>
-                  </ul>
-                  <div class="secondary-controls">
-                      <div class="speeds menu-container">
-                          <a class="speed-button" href="#" title="${_('Speeds')}" role="button" aria-disabled="false">
-                              <span class="label">${_('Speed')}</span>
-                              <span class="value"></span>
-                          </a>
-                          <ol class="video-speeds menu" role="menu"></ol>
-                      </div>
-                      <div class="volume">
-                          <a href="#" role="button" aria-disabled="false" title="${_('Volume')}" aria-label="${_('Click on this button to mute or unmute this video or press UP or DOWN buttons to increase or decrease volume level.')}"></a>
-                          <div role="presentation" class="volume-slider-container">
-                              <div class="volume-slider"></div>
-                          </div>
-                      </div>
-                      <a href="#" class="add-fullscreen" title="${_('Fill browser')}" role="button" aria-disabled="false">${_('Fill browser')}</a>
-                      <a href="#" class="quality-control is-hidden" title="${_('HD off')}" role="button" aria-disabled="false">${_('HD off')}</a>
-
-                      <div class="lang menu-container">
-                        <a href="#" class="hide-subtitles" title="${_('Turn off captions')}" role="button" aria-disabled="false">${_('Turn off captions')}</a>
-                      </div>
-                  </div>
+                  <div class="vcr"><div class="vidtime">0:00 / 0:00</div></div>
+                  <div class="secondary-controls"></div>
               </div>
           </section>
           <a class="nav-skip sr" id="before-transcript_${id}" href="#after-transcript_${id}">${_('Skip to end of transcript.')}</a>
       </article>
-
-      <ol id="transcript-captions" class="subtitles" tabindex="0" role="group" aria-label="${_('Activating an item in this group will spool the video to the corresponding time point. To skip transcript, go to previous item.')}">
-        <li></li>
-      </ol>
     </div>
 
     <a class="nav-skip sr" id="after-transcript_${id}" href="#before-transcript_${id}">${_('Go back to start of transcript.')}</a>

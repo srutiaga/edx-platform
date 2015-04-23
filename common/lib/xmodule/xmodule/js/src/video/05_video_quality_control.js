@@ -5,6 +5,12 @@ define(
 'video/05_video_quality_control.js',
 [],
 function () {
+    var template = [
+        '<a href="#" class="quality-control is-hidden" title="',
+            gettext('HD off'), '" role="button" aria-disabled="false">',
+            gettext('HD off'),
+        '</a>'
+    ].join('');
 
     // VideoQualityControl() function - what this module "exports".
     return function (state) {
@@ -12,7 +18,6 @@ function () {
 
         // Changing quality for now only works for YouTube videos.
         if (state.videoType !== 'youtube') {
-            state.el.find('a.quality-control').remove();
             return;
         }
 
@@ -47,11 +52,12 @@ function () {
     }
 
     function destroy() {
-        this.videoQualityControl.el.hide();
         this.videoQualityControl.el.off('click',
             this.videoQualityControl.toggleQuality
         );
         this.el.off('.quality');
+        this.videoQualityControl.el.remove();
+        delete this.videoQualityControl;
     }
 
     // function _renderElements(state)
@@ -60,10 +66,9 @@ function () {
     //     make the created DOM elements available via the 'state' object. Much easier to work this
     //     way - you don't have to do repeated jQuery element selects.
     function _renderElements(state) {
-        state.videoQualityControl.el = state.el.find('a.quality-control');
-
-        state.videoQualityControl.el.show();
+        var element = state.videoQualityControl.el = $(template);
         state.videoQualityControl.quality = 'large';
+        state.el.find('.secondary-controls').append(element);
     }
 
     // function _bindHandlers(state)

@@ -36,6 +36,23 @@ function (Sjson, AsyncProcess) {
     };
 
     VideoCaption.prototype = {
+        langTemplate: [
+            '<div class="lang menu-container">',
+                '<a href="#" class="hide-subtitles" title="',
+                    gettext('Turn off captions'), '" role="button" aria-disabled="false">',
+                    gettext('Turn off captions'),
+                '</a>',
+            '</div>'
+        ].join(''),
+
+        template: [
+            '<ol id="transcript-captions" class="subtitles" tabindex="0" role="group" aria-label="',
+                gettext('Activating an item in this group will spool the video to the corresponding time point. To skip transcript, go to previous item.'),
+                '">',
+                '<li></li>',
+            '</ol>'
+        ].join(''),
+
         destroy: function () {
             var state = this.state,
                 events = [
@@ -75,8 +92,11 @@ function (Sjson, AsyncProcess) {
                 })
                 .removeClass('is-captions-rendered');
 
-            this.loaded = false;
-            this.rendered = false;
+            this.subtitlesEl.remove();
+            this.container.remove();
+            this.subtitlesEl = this.container = null;
+            this.loaded = this.rendered = false;
+            delete this.state.videoCaption;
         },
         /**
         * @desc Initiate rendering of elements, and set their initial configuration.
@@ -87,20 +107,16 @@ function (Sjson, AsyncProcess) {
                 languages = this.state.config.transcriptLanguages;
 
             this.loaded = false;
-            this.subtitlesEl = state.el.find('ol.subtitles');
-            this.container = state.el.find('.lang');
-            this.hideSubtitlesEl = state.el.find('a.hide-subtitles');
+            this.subtitlesEl = $(this.template);
+            this.container = $(this.langTemplate);
+            this.hideSubtitlesEl = this.container.find('a.hide-subtitles');
 
             if (_.keys(languages).length) {
                 this.renderLanguageMenu(languages);
-
-                if (!this.fetchCaption()) {
-                    this.hideCaptions(true);
-                    this.hideSubtitlesEl.hide();
+                if (this.fetchCaption()) {
+                    this.state.el.find('.video-wrapper').after(this.subtitlesEl);
+                    this.state.el.find('.secondary-controls').append(this.container);
                 }
-            } else {
-                this.hideCaptions(true, false);
-                this.hideSubtitlesEl.hide();
             }
         },
 
@@ -185,8 +201,8 @@ function (Sjson, AsyncProcess) {
         */
         onContainerMouseEnter: function (event) {
             event.preventDefault();
-            this.state.videoPlayer.log('video_show_cc_menu', {});
             $(event.currentTarget).addClass('is-opened');
+            this.state.el.trigger('language_menu:show');
         },
 
         /**
@@ -196,8 +212,8 @@ function (Sjson, AsyncProcess) {
         */
         onContainerMouseLeave: function (event) {
             event.preventDefault();
-            this.state.videoPlayer.log('video_hide_cc_menu', {});
             $(event.currentTarget).removeClass('is-opened');
+            this.state.el.trigger('language_menu:hide');
         },
 
         /**
@@ -261,7 +277,7 @@ function (Sjson, AsyncProcess) {
                 data, youtubeId;
 
             if (this.loaded) {
-                this.hideCaptions(false);
+                return false;
             } else {
                 this.hideCaptions(state.hide_captions, false);
             }
@@ -428,11 +444,11 @@ function (Sjson, AsyncProcess) {
 
                 if (state.lang !== langCode) {
                     state.lang = langCode;
-                    state.storage.setItem('language', langCode);
                     el  .addClass('is-active')
                         .siblings('li')
                         .removeClass('is-active');
 
+                    state.el.trigger('language_menu:change', [langCode]);
                     self.fetchCaption();
                 }
             });
@@ -816,35 +832,28 @@ function (Sjson, AsyncProcess) {
         */
         hideCaptions: function (hide_captions, update_cookie) {
             var hideSubtitlesEl = this.hideSubtitlesEl,
-                state = this.state,
-                type, text;
+                state = this.state, text;
 
             if (typeof update_cookie === 'undefined') {
                 update_cookie = true;
             }
 
             if (hide_captions) {
-                type = 'hide_transcript';
                 state.captionsHidden = true;
                 state.el.addClass('closed');
                 text = gettext('Turn on captions');
+                this.state.el.trigger('captions:hide');
             } else {
-                type = 'show_transcript';
                 state.captionsHidden = false;
                 state.el.removeClass('closed');
                 this.scrollCaption();
                 text = gettext('Turn off captions');
+                this.state.el.trigger('captions:show');
             }
 
             hideSubtitlesEl
                 .attr('title', text)
                 .text(gettext(text));
-
-            if (state.videoPlayer) {
-                state.videoPlayer.log(type, {
-                    currentTime: state.videoPlayer.currentTime
-                });
-            }
 
             if (state.resizer) {
                 if (state.isFullScreen) {
@@ -871,9 +880,8 @@ function (Sjson, AsyncProcess) {
         */
         captionHeight: function () {
             var state = this.state;
-
             if (state.isFullScreen) {
-                return state.container.height() - state.videoControl.height;
+                return state.container.height() - state.videoFullScreen.height;
             } else {
                 return state.container.height();
             }
@@ -893,7 +901,7 @@ function (Sjson, AsyncProcess) {
                 // In case of html5 autoshowing subtitles, we adjust height of
                 // subs, by height of scrollbar.
                 height = state.videoControl.el.height() +
-                    0.5 * state.videoControl.sliderEl.height();
+                    0.5 * state.el.find('.slider').height();
                 // Height of videoControl does not contain height of slider.
                 // css is set to absolute, to avoid yanking when slider
                 // autochanges its height.

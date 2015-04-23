@@ -29,7 +29,6 @@ function (HTML5Video, Resizer) {
             isEnded: isEnded,
             isPlaying: isPlaying,
             isUnstarted: isUnstarted,
-            log: log,
             onCaptionSeek: onSeek,
             onEnded: onEnded,
             onError: onError,
@@ -95,8 +94,6 @@ function (HTML5Video, Resizer) {
         // metadata is loaded, which normally happens just after the video
         // starts playing. Just after that configurations can be applied.
         state.videoPlayer.ready = _.once(function () {
-            $(window).on('unload', state.saveState);
-
             if (!state.isFlashMode() && state.speed != '1.0') {
 
                 // Work around a bug in the Youtube API that causes videos to
@@ -163,7 +160,6 @@ function (HTML5Video, Resizer) {
                     videoHeight = player[0].videoHeight || player.height();
 
                 _resize(state, videoWidth, videoHeight);
-
                 _updateVcrAndRegion(state);
             }, false);
 
@@ -264,8 +260,8 @@ function (HTML5Video, Resizer) {
             });
         }
 
-        $(window).on('resize', _.debounce(function () {
-            state.trigger('videoControl.updateControlsHeight', null);
+        $(window).on('resize.video', _.debounce(function () {
+            state.trigger('videoFullScreen.updateControlsHeight', null);
             state.el.trigger('caption:resize');
             state.resizer.align();
         }, 100));
@@ -315,13 +311,19 @@ function (HTML5Video, Resizer) {
 
     function destroy() {
         var player = this.videoPlayer.player;
-        this.videoPlayer.stopTimer();
-        this.videoPlayer.pause();
+        this.el.removeClass([
+            'is-unstarted', 'is-playing', 'is-paused', 'is-buffered',
+            'is-ended', 'is-cued'
+        ].join(' '));
+        $(window).off('.video');
         this.el.trigger('destroy');
+        this.el.off();
+        this.videoPlayer.stopTimer();
+        this.resizer.destroy();
         if (player && _.isFunction(player.destroy)) {
             player.destroy();
         }
-        this.el.off('speedchange volumechange volumechange:silent play.silent');
+        delete this.videoPlayer;
     }
 
     function pause() {
@@ -452,19 +454,8 @@ function (HTML5Video, Resizer) {
         }
 
         newSpeed = parseFloat(newSpeed).toFixed(2).replace(/\.00$/, '.0');
-
-        this.videoPlayer.log(
-            'speed_change_video',
-            {
-                current_time: time,
-                old_speed: this.speed,
-                new_speed: newSpeed
-            }
-        );
-
-        this.setSpeed(newSpeed, true);
+        this.setSpeed(newSpeed);
         this.videoPlayer.setPlaybackRate(newSpeed);
-        this.saveState(true, { speed: newSpeed });
     }
 
     // Every 200 ms, if the video is playing, we call the function update, via
@@ -475,7 +466,6 @@ function (HTML5Video, Resizer) {
         var time = params.time,
             type = params.type,
             oldTime = this.videoPlayer.currentTime;
-
         // After the user seeks, the video will start playing from
         // the sought point, and stop playing at the end.
         this.videoPlayer.goToStartTime = false;
@@ -484,14 +474,7 @@ function (HTML5Video, Resizer) {
         }
 
         this.videoPlayer.seekTo(time);
-        this.videoPlayer.log(
-            'seek_video',
-            {
-                old_time: oldTime,
-                new_time: time,
-                type: type
-            }
-        );
+        this.el.trigger('seek', [time, oldTime, type]);
     }
 
     function seekTo(time) {
@@ -528,7 +511,6 @@ function (HTML5Video, Resizer) {
         }
 
         this.videoPlayer.updatePlayTime(time, true);
-        this.el.trigger('seek', arguments);
 
         // the timer is stopped above; restart it.
         if (this.videoPlayer.isPlaying()) {
@@ -553,14 +535,7 @@ function (HTML5Video, Resizer) {
 
     function onEnded() {
         var time = this.videoPlayer.duration();
-        this.videoPlayer.log(
-            'stop_video',
-            {
-                currentTime: this.videoPlayer.currentTime
-            }
-        );
 
-        this.trigger('videoControl.pause', null);
         this.trigger('videoProgressSlider.notifyThroughHandleEnd', {
             end: true
         });
@@ -568,40 +543,20 @@ function (HTML5Video, Resizer) {
         if (this.videoPlayer.skipOnEndedStartEndReset) {
             this.videoPlayer.skipOnEndedStartEndReset = undefined;
         }
-
         // Sometimes `onEnded` events fires when `currentTime` not equal
         // `duration`. In this case, slider doesn't reach the end point of
         // timeline.
         this.videoPlayer.updatePlayTime(time);
-
         this.el.trigger('ended', arguments);
     }
 
     function onPause() {
-        this.videoPlayer.log(
-            'pause_video',
-            {
-                currentTime: this.videoPlayer.currentTime
-            }
-        );
-
         this.videoPlayer.stopTimer();
-
-        this.trigger('videoControl.pause', null);
-        this.saveState(true);
         this.el.trigger('pause', arguments);
     }
 
     function onPlay() {
-        this.videoPlayer.log(
-            'play_video',
-            {
-                currentTime: this.videoPlayer.currentTime
-            }
-        );
-
         this.videoPlayer.runTimer();
-        this.trigger('videoControl.play', null);
         this.trigger('videoProgressSlider.notifyThroughHandleEnd', {
             end: false
         });
@@ -621,7 +576,6 @@ function (HTML5Video, Resizer) {
         quality = this.videoPlayer.player.getPlaybackQuality();
 
         this.trigger('videoQualityControl.onQualityChange', quality);
-
         this.el.trigger('qualitychange', arguments);
     }
 
@@ -639,8 +593,6 @@ function (HTML5Video, Resizer) {
         this.el.on('volumechange volumechange:silent', function (event, volume) {
             _this.videoPlayer.onVolumeChange(volume);
         });
-
-        this.videoPlayer.log('load_video');
 
         availablePlaybackRates = this.videoPlayer.player
                                     .getAvailablePlaybackRates();
@@ -844,10 +796,8 @@ function (HTML5Video, Resizer) {
         return time;
     }
 
-    function updatePlayTime(time, skip_seek) {
-        var videoPlayer = this.videoPlayer,
-            duration = this.videoPlayer.duration(),
-            youTubeId;
+    function updatePlayTime(time) {
+        var duration = this.videoPlayer.duration();
 
         this.trigger(
             'videoProgressSlider.updatePlayTime',
@@ -955,30 +905,6 @@ function (HTML5Video, Resizer) {
         }
 
         return Math.floor(dur);
-    }
-
-    function log(eventName, data) {
-        var logInfo;
-
-        // Default parameters that always get logged.
-        logInfo = {
-            id:   this.id
-        };
-
-        // If extra parameters were passed to the log.
-        if (data) {
-            $.each(data, function (paramName, value) {
-                logInfo[paramName] = value;
-            });
-        }
-
-        if (this.isYoutubeType()) {
-            logInfo.code = this.youtubeId();
-        } else {
-            logInfo.code = 'html5';
-        }
-
-        Logger.log(eventName, logInfo);
     }
 
     function onVolumeChange(volume) {

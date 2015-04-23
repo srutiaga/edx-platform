@@ -31,20 +31,9 @@ function () {
     function _makeFunctionsPublic(state) {
         var methodsDict = {
             destroy: destroy,
-            enterFullScreen: enterFullScreen,
-            exitFullScreenHandler: exitFullScreenHandler,
-            exitFullScreen: exitFullScreen,
             hideControls: hideControls,
-            hidePlayPlaceholder: hidePlayPlaceholder,
-            pause: pause,
-            play: play,
             show: show,
             showControls: showControls,
-            showPlayPlaceholder: showPlayPlaceholder,
-            toggleFullScreen: toggleFullScreen,
-            toggleFullScreenHandler: toggleFullScreenHandler,
-            togglePlayback: togglePlayback,
-            updateControlsHeight: updateControlsHeight,
             updateVcrVidTime: updateVcrVidTime
         };
 
@@ -52,18 +41,13 @@ function () {
     }
 
     function destroy() {
-        this.videoControl.pause();
-        this.videoControl.exitFullScreen();
-        this.videoControl.playPauseEl.off('click', this.videoControl.togglePlayback);
-        this.videoControl.fullScreenEl.off('click', this.videoControl.toggleFullScreenHandler);
-
-        $(document).off('keyup', this.videoControl.exitFullScreenHandler);
-        this.el.off('mousemove', this.videoControl.showControls);
-        this.el.off('keydown', this.videoControl.showControls);
-
-        this.el.off('.controls');
-        this.videoControl.playPauseEl.off('.controls');
-        this.videoControl.playPlaceholder.off('.controls');
+        this.el.off({
+            'mousemove': this.videoControl.showControls,
+            'keydown': this.videoControl.showControls,
+            'destroy': this.videoControl.destroy
+        });
+        this.el.off('controls');
+        delete this.videoControl;
     }
 
     // function _renderElements(state)
@@ -73,21 +57,7 @@ function () {
     //     way - you don't have to do repeated jQuery element selects.
     function _renderElements(state) {
         state.videoControl.el = state.el.find('.video-controls');
-        // state.videoControl.el.append(el);
-
-        state.videoControl.sliderEl            = state.videoControl.el.find('.slider');
-        state.videoControl.playPauseEl         = state.videoControl.el.find('.video_control');
-        state.videoControl.playPlaceholder     = state.el.find('.btn-play');
-        state.videoControl.secondaryControlsEl = state.videoControl.el.find('.secondary-controls');
-        state.videoControl.fullScreenEl        = state.videoControl.el.find('.add-fullscreen');
-        state.videoControl.vidTimeEl           = state.videoControl.el.find('.vidtime');
-
-        state.videoControl.fullScreenState = false;
-        state.videoControl.pause();
-
-        if (state.isTouch && state.videoType === 'html5') {
-            state.videoControl.showPlayPlaceholder();
-        }
+        state.videoControl.vidTimeEl = state.videoControl.el.find('.vidtime');
 
         if ((state.videoType === 'html5') && (state.config.autohideHtml5)) {
             state.videoControl.fadeOutTimeout = state.config.fadeOutTimeout;
@@ -95,65 +65,20 @@ function () {
             state.videoControl.el.addClass('html5');
             state.controlHideTimeout = setTimeout(state.videoControl.hideControls, state.videoControl.fadeOutTimeout);
         }
-
-        // ARIA
-        // Let screen readers know that this anchor, representing the slider
-        // handle, behaves as a slider named 'video slider'.
-        state.videoControl.sliderEl.find('.ui-slider-handle').attr({
-            'role': 'slider',
-            'title': gettext('Video slider')
-        });
-
-        state.videoControl.updateControlsHeight();
     }
 
     // function _bindHandlers(state)
     //
     //     Bind any necessary function callbacks to DOM events (click, mousemove, etc.).
     function _bindHandlers(state) {
-        state.videoControl.playPauseEl.on('click', state.videoControl.togglePlayback);
-        state.videoControl.fullScreenEl.on('click', state.videoControl.toggleFullScreenHandler);
-        state.el.on('fullscreen.controls', function (event, isFullScreen) {
-            var height = state.videoControl.updateControlsHeight();
-
-            if (isFullScreen) {
-                state.resizer
-                    .delta
-                    .substract(height, 'height')
-                    .setMode('both');
-
-            } else {
-                state.resizer
-                    .delta
-                    .reset()
-                    .setMode('width');
-            }
-        });
-
-        $(document).on('keyup', state.videoControl.exitFullScreenHandler);
-
         if ((state.videoType === 'html5') && (state.config.autohideHtml5)) {
-            state.el.on('mousemove', state.videoControl.showControls);
-            state.el.on('keydown', state.videoControl.showControls);
-        }
-        // The state.previousFocus is used in video_speed_control to track
-        // the element that had the focus before it.
-        state.videoControl.playPauseEl.on('blur.controls', function () {
-            state.previousFocus = 'playPause';
-        });
-
-        if (/iPad|Android/i.test(state.isTouch[0])) {
-            state.videoControl.playPlaceholder
-                .on('click.controls', function () {
-                    state.trigger('videoPlayer.play', null);
-                });
+            state.el.on({
+                'mousemove': state.videoControl.showControls,
+                'keydown': state.videoControl.showControls
+            });
         }
 
         state.el.on('destroy', state.videoControl.destroy);
-    }
-
-    function _getControlsHeight(control) {
-        return control.el.height() + 0.5 * control.sliderEl.height();
     }
 
     // ***************************************************************
@@ -161,12 +86,6 @@ function () {
     // These are available via the 'state' object. Their context ('this' keyword) is the 'state' object.
     // The magic private function that makes them available and sets up their context is makeFunctionsPublic().
     // ***************************************************************
-
-    function updateControlsHeight() {
-        this.videoControl.height = _getControlsHeight(this.videoControl);
-
-        return this.videoControl.height;
-    }
 
     function show() {
         this.videoControl.el.removeClass('is-hidden');
@@ -192,13 +111,12 @@ function () {
             }
 
             this.controlHideTimeout = setTimeout(this.videoControl.hideControls, this.videoControl.fadeOutTimeout);
-
             this.controlShowLock = false;
         }
     }
 
     function hideControls() {
-        var _this;
+        var _this = this;
 
         this.controlHideTimeout = null;
 
@@ -207,12 +125,8 @@ function () {
         }
 
         this.controlState = 'hiding';
-
-        _this = this;
-
         this.videoControl.el.fadeOut(this.videoControl.fadeOutTimeout, function () {
             _this.controlState = 'invisible';
-
             // If the focus was on the video control or the volume control,
             // then we must make sure to close these dialogs. Otherwise, after
             // next autofocus, these dialogs will be open, but the focus will
@@ -222,107 +136,6 @@ function () {
 
             _this.focusGrabber.enableFocusGrabber();
         });
-    }
-
-    function showPlayPlaceholder(event) {
-        this.videoControl.playPlaceholder
-            .removeClass('is-hidden')
-            .attr({
-                'aria-hidden': 'false',
-                'tabindex': 0
-            });
-    }
-
-    function hidePlayPlaceholder(event) {
-        this.videoControl.playPlaceholder
-            .addClass('is-hidden')
-            .attr({
-                'aria-hidden': 'true',
-                'tabindex': -1
-            });
-    }
-
-    function play() {
-        this.videoControl.isPlaying = true;
-        this.videoControl.playPauseEl
-            .removeClass('play')
-            .addClass('pause')
-            .attr('title', gettext('Pause'));
-
-        if (/iPad|Android/i.test(this.isTouch[0]) && this.videoType === 'html5') {
-            this.videoControl.hidePlayPlaceholder();
-        }
-    }
-
-    function pause() {
-        this.videoControl.isPlaying = false;
-        this.videoControl.playPauseEl
-            .removeClass('pause')
-            .addClass('play')
-            .attr('title', gettext('Play'));
-
-        if (/iPad|Android/i.test(this.isTouch[0]) && this.videoType === 'html5') {
-            this.videoControl.showPlayPlaceholder();
-        }
-    }
-
-    function togglePlayback(event) {
-        event.preventDefault();
-        this.videoCommands.execute('togglePlayback');
-    }
-
-    /**
-     * Event handler to toggle fullscreen mode.
-     * @param {jquery Event} event
-     */
-    function toggleFullScreenHandler(event) {
-        event.preventDefault();
-        this.videoCommands.execute('toggleFullScreen');
-    }
-
-    function exitFullScreen() {
-        var fullScreenClassNameEl = this.el.add(document.documentElement);
-
-        this.videoControl.fullScreenState = this.isFullScreen = false;
-        fullScreenClassNameEl.removeClass('video-fullscreen');
-        $(window).scrollTop(this.scrollPos);
-        this.videoControl.fullScreenEl
-            .attr('title', gettext('Fill browser'))
-            .text(gettext('Fill browser'));
-        this.el.trigger('fullscreen', [this.isFullScreen]);
-    }
-
-    function enterFullScreen() {
-        var fullScreenClassNameEl = this.el.add(document.documentElement);
-
-        this.scrollPos = $(window).scrollTop();
-        $(window).scrollTop(0);
-        this.videoControl.fullScreenState = this.isFullScreen = true;
-        fullScreenClassNameEl.addClass('video-fullscreen');
-        this.videoControl.fullScreenEl
-            .attr('title', gettext('Exit full browser'))
-            .text(gettext('Exit full browser'));
-        this.el.trigger('fullscreen', [this.isFullScreen]);
-    }
-
-    /** Toggle fullscreen mode. */
-    function toggleFullScreen() {
-        if (this.videoControl.fullScreenState) {
-            this.videoControl.exitFullScreen();
-        } else {
-            this.videoControl.enterFullScreen();
-        }
-    }
-
-    /**
-     * Event handler to exit from fullscreen mode.
-     * @param {jquery Event} event
-     */
-    function exitFullScreenHandler(event) {
-        if ((this.isFullScreen) && (event.keyCode === 27)) {
-            event.preventDefault();
-            this.videoCommands.execute('toggleFullScreen');
-        }
     }
 
     function updateVcrVidTime(params) {
