@@ -24,7 +24,7 @@ def is_bumper_enabled(video):
                  (date_last_view_bumper and date_last_view_bumper + timedelta(seconds=periodicity) > utc_now)
     return bool(
         settings.FEATURES.get('ENABLE_VIDEO_BUMPER') and
-        getattr(video, 'video_bumper') and
+        getattr(video, 'video_bumper', {}) and
         edxval_api and
         not has_viewed
     )
@@ -47,7 +47,7 @@ def bumperize(video):
     if not video.bumper['enabled']:
         return
 
-    bumper_settings = getattr(video, 'video_bumper', None)
+    bumper_settings = getattr(video, 'video_bumper', {})
     try:
         edx_video_id, transcripts = bumper_settings['edx_video_id'], bumper_settings['transcripts']
     except TypeError, KeyError:
