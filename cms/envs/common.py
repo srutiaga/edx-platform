@@ -145,6 +145,9 @@ FEATURES = {
 
     # Show video bumper in Studio
     'ENABLE_VIDEO_BUMPER': True,
+
+    # How many seconds to show the bumper again
+    'SHOW_BUMPER_PERIODICITY' : 1,
 }
 
 ENABLE_JASMINE = False

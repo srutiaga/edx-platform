@@ -18,7 +18,7 @@ function() {
         }
 
         _.bindAll(this, 'onSpeedChange', 'onPause', 'bindUnloadHandler',
-            'onUnload', 'onTranscriptDownload', 'onYoutubeAvailability', 'destroy');
+            'onUnload', 'onTranscriptDownload', 'onYoutubeAvailability', 'destroy', 'onSkip');
         this.state = state;
         this.state.videoSaveStatePlugin = this;
         this.i18n = i18n;
@@ -37,7 +37,8 @@ function() {
                 'transcript_download:change': this.onTranscriptDownload,
                 'language_menu:change': this.onLanguageChange,
                 'youtube_availability': this.onYoutubeAvailability,
-                'destroy': this.destroy
+                'destroy': this.destroy,
+                'skip': this.onSkip
             });
             $(window).off('unload', this.onUnload);
             delete this.state.videoSaveStatePlugin;
@@ -56,7 +57,8 @@ function() {
                 'pause': this.onPause,
                 'transcript_download:change': this.onTranscriptDownload,
                 'youtube_availability': this.onYoutubeAvailability,
-                'destroy': this.destroy
+                'destroy': this.destroy,
+                'skip': this.onSkip
             });
         },
 
@@ -89,6 +91,14 @@ function() {
 
         onYoutubeAvailability: function (event, youtubeIsAvailable) {
             this.saveState(true, {youtube_is_available: youtubeIsAvailable});
+        },
+
+        onSkip: function (doNotShowAgain) {
+            if (doNotShowAgain) {
+                this.saveState(true, {do_not_show_again_bumper: true});
+            } else {
+                this.saveState(true, {date_last_view_bumper: true});
+            }
         },
 
         saveState: function (async, data) {

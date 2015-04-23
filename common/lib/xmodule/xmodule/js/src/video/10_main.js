@@ -102,7 +102,7 @@
                     bumperState.modules = [
                         VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder,
                         VideoPlaySkipControl, VideoSkipControl, VideoCaption,
-                        VideoVolumeControl, VideoCommands
+                        VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
                     ];
                     bumperState.youtubeXhr = youtubeXhr;
                     bumperState.isBumper = true;

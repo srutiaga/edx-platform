@@ -28,6 +28,7 @@ define(
         this.element = $(element);
         this.player = player;
         this.state = state;
+        this.doNotShowAgain = false;
         this.state.videoBumper = this;
         this.renderElements();
         this.bindHandlers();
@@ -57,6 +58,7 @@ define(
         },
 
         skipAndDoNotShowAgain: function () {
+            this.doNotShowAgain = true;
             this.skip();
             // TODO: send a request.
         },
@@ -79,6 +81,7 @@ define(
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.off(events, this.showMainVideo);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
+                this.state.videoSaveStatePlugin.onSkip(this.doNotShowAgain);
                 this.state.videoPlayer.destroy();
             }
         }

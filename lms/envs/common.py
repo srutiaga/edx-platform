@@ -374,6 +374,9 @@ FEATURES = {
 
     # Show video bumper in LMS
     'ENABLE_VIDEO_BUMPER': True,
+
+    # How many seconds to show the bumper again
+    'SHOW_BUMPER_PERIODICITY' : 1,
 }
 
 # Ignore static asset files on import which match this pattern
