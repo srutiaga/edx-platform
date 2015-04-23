@@ -81,7 +81,7 @@ define(
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.off(events, this.showMainVideo);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
-                this.state.videoSaveStatePlugin.onSkip(this.doNotShowAgain);
+                this.state.el.trigger('skip', [this.doNotShowAgain]);
                 this.state.videoPlayer.destroy();
             }
         }

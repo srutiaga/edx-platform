@@ -93,16 +93,19 @@ function() {
             this.saveState(true, {youtube_is_available: youtubeIsAvailable});
         },
 
-        onSkip: function (doNotShowAgain) {
+        onSkip: function (event, doNotShowAgain) {
+            var info = {date_last_view_bumper: true};
             if (doNotShowAgain) {
-                this.saveState(true, {do_not_show_again_bumper: true});
-            } else {
-                this.saveState(true, {date_last_view_bumper: true});
+                _.extend(info, {do_not_show_again_bumper: true});
             }
+            this.saveState(true, info);
         },
 
         saveState: function (async, data) {
             if (!($.isPlainObject(data))) {
+                if (this.state.isBumper) {
+                    return;
+                }
                 data = {
                     saved_video_position: this.state.videoPlayer.currentTime
                 };
