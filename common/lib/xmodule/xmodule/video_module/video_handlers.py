@@ -7,6 +7,7 @@ StudioViewHandlers are handlers for video descriptor instance.
 
 import json
 import logging
+from datetime import datetime
 from webob import Response
 
 from xblock.core import XBlock
@@ -44,7 +45,8 @@ class VideoStudentViewHandlers(object):
         """
         accepted_keys = [
             'speed', 'saved_video_position', 'transcript_language',
-            'transcript_download_format', 'youtube_is_available'
+            'transcript_download_format', 'youtube_is_available',
+            'date_last_view_bumper', 'do_not_show_again_bumper'
         ]
 
         conversions = {
@@ -60,6 +62,9 @@ class VideoStudentViewHandlers(object):
                         value = conversions[key](data[key])
                     else:
                         value = data[key]
+
+                    if key == 'date_last_view_bumper':
+                        value = datetime.utcnow()
 
                     setattr(self, key, value)
 

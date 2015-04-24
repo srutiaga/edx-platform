@@ -28,6 +28,7 @@ define(
         this.element = $(element);
         this.player = player;
         this.state = state;
+        this.doNotShowAgain = false;
         this.state.videoBumper = this;
         this.renderElements();
         this.bindHandlers();
@@ -44,6 +45,7 @@ define(
         },
 
         showMainVideo: function () {
+            this.saveState();
             this.destroy();
             this.dfd.resolve();
         },
@@ -57,6 +59,7 @@ define(
         },
 
         skipAndDoNotShowAgain: function () {
+            this.doNotShowAgain = true;
             this.skip();
             // TODO: send a request.
         },
@@ -73,6 +76,14 @@ define(
         bindHandlers: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.on(events, this.showMainVideo);
+        },
+
+        saveState: function () {
+            var info = {date_last_view_bumper: true};
+            if (this.doNotShowAgain) {
+                _.extend(info, {do_not_show_again_bumper: true});
+            }
+            this.state.videoSaveStatePlugin.saveState(true, info);
         },
 
         destroy: function () {

@@ -93,6 +93,9 @@ function() {
 
         saveState: function (async, data) {
             if (!($.isPlainObject(data))) {
+                if (this.state.isBumper) {
+                    return;
+                }
                 data = {
                     saved_video_position: this.state.videoPlayer.currentTime
                 };

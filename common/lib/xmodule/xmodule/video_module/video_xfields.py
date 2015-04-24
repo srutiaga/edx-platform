@@ -3,7 +3,7 @@ XFields for video module.
 """
 import datetime
 
-from xblock.fields import Scope, String, Float, Boolean, List, Dict
+from xblock.fields import Scope, String, Float, Boolean, List, Dict, DateTime
 
 from xmodule.fields import RelativeTime
 
@@ -164,4 +164,13 @@ class VideoFields(object):
         display_name=_("EdX Video ID"),
         scope=Scope.settings,
         default="",
+    )
+    date_last_view_bumper = DateTime(
+        display_name=_("Date of the last view of the bumper"),
+        scope=Scope.preferences,
+    )
+    do_not_show_again_bumper = Boolean(
+        display_name=_("Do not show again bumper"),
+        scope=Scope.preferences,
+        default=False,
     )
