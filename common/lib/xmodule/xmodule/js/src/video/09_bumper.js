@@ -45,6 +45,7 @@ define(
         },
 
         showMainVideo: function () {
+            this.saveState();
             this.destroy();
             this.dfd.resolve();
         },
@@ -77,11 +78,18 @@ define(
             this.element.on(events, this.showMainVideo);
         },
 
+        saveState: function () {
+            var info = {date_last_view_bumper: true};
+            if (this.doNotShowAgain) {
+                _.extend(info, {do_not_show_again_bumper: true});
+            }
+            this.state.videoSaveStatePlugin.saveState(true, info);
+        },
+
         destroy: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.off(events, this.showMainVideo);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
-                this.state.el.trigger('skip', [this.doNotShowAgain]);
                 this.state.videoPlayer.destroy();
             }
         }
