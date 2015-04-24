@@ -40,7 +40,9 @@ class TestVideoYouTube(TestVideo):
             'download_video_link': u'example.mp4',
             'handout': None,
             'id': self.item_descriptor.location.html_id(),
-            'metadata': json.dumps(OrderedDict({
+            'metadata': json.dumps(
+                OrderedDict(
+                    {
                         "saveStateUrl": self.item_descriptor.xmodule_runtime.ajax_url + "/save_user_state",
                         "autoplay": False,
                         "streams": "0.75:jNCf2gIqpeE,1.00:ZwkTiUPN0mg,1.25:rsq9auxASqI,1.50:kMyNdzVHHgg",
@@ -60,11 +62,15 @@ class TestVideoYouTube(TestVideo):
                         "ytTestUrl": "gdata.youtube.com/feeds/api/videos/",
                         "ytImageUrl": "http://img.youtube.com/vi/{youtube_id}/0.jpg",
                         "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                            self.item_descriptor, 'transcript', 'translation').rstrip('/?'),
+                            self.item_descriptor, 'transcript', 'translation'
+                            ).rstrip('/?'),
                         "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                            self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
+                            self.item_descriptor, 'transcript', 'available_translations'
+                            ).rstrip('/?'),
                         "autohideHtml5": False,
-                        })),
+                    }
+                )
+            ),
             'track': None,
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
@@ -112,7 +118,9 @@ class TestVideoNonYouTube(TestVideo):
             'download_video_link': u'example.mp4',
             'handout': None,
             'id': self.item_descriptor.location.html_id(),
-            'metadata': json.dumps(OrderedDict({
+            'metadata': json.dumps(
+                OrderedDict(
+                    {
                         "saveStateUrl": self.item_descriptor.xmodule_runtime.ajax_url + "/save_user_state",
                         "autoplay": False,
                         "streams": "1.00:3_yD_cEKoCk",
@@ -136,13 +144,16 @@ class TestVideoNonYouTube(TestVideo):
                         "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
                             self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
                         "autohideHtml5": False,
-                        })),
+                    }
+                )
+            ),
             'track': None,
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
                 {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
-                {'display_name': 'Text (.txt) file', 'value': 'txt'}]
-            }
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ]
+        }
 
         self.assertEqual(
             context,
@@ -229,11 +240,13 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
                 {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
-                {'display_name': 'Text (.txt) file', 'value': 'txt'}]
-            }
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ]
+        }
 
         for data in cases:
-            metadata = OrderedDict({
+            metadata = OrderedDict(
+                {
                     "saveStateUrl": "",
                     "autoplay": settings.FEATURES.get('AUTOPLAY_VIDEOS', True),
                     "streams": "1.00:3_yD_cEKoCk",
@@ -253,11 +266,14 @@ class TestGetHtmlMethod(BaseTestXmodule):
                     "ytTestUrl": "gdata.youtube.com/feeds/api/videos/",
                     "ytImageUrl": "http://img.youtube.com/vi/{youtube_id}/0.jpg",
                     "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'translation').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'translation'
+                    ).rstrip('/?'),
                     "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'available_translations'
+                    ).rstrip('/?'),
                     "autohideHtml5": False,
-                    })
+                }
+            )
             DATA = SOURCE_XML.format(
                 download_track=data['download_track'],
                 track=data['track'],
@@ -275,19 +291,19 @@ class TestGetHtmlMethod(BaseTestXmodule):
                     'transcript_download_format': None if self.item_descriptor.track and self.item_descriptor.download_track else 'srt',
                     'track': track_url if data['expected_track_url'] == u'a_sub_file.srt.sjson' else data['expected_track_url'],
                     'id': self.item_descriptor.location.html_id(),
-                    })
+            })
             metadata.update({
                     'transcriptLanguages': {"en": "English"} if not data['transcripts'] else {"uk": u'Українська'},
                     'transcriptLanguage': u'en' if not data['transcripts'] or data.get('sub') else u'uk',
                     'transcriptTranslationUrl': self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'translation'
-                        ).rstrip('/?'),
+                    ).rstrip('/?'),
                     'transcriptAvailableTranslationsUrl': self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'available_translations'
-                        ).rstrip('/?'),
+                    ).rstrip('/?'),
                     'saveStateUrl': self.item_descriptor.xmodule_runtime.ajax_url + '/save_user_state',
                     'sub': data['sub'],
-                    })
+            })
             expected_context["metadata"] = json.dumps(metadata)
 
             self.assertEqual(
@@ -377,7 +393,10 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'yt_api_url': 'www.youtube.com/iframe_api',
             'yt_test_url': 'gdata.youtube.com/feeds/api/videos/',
             'transcript_download_format': 'srt',
-            'transcript_download_formats_list': [{'display_name': 'SubRip (.srt) file', 'value': 'srt'}, {'display_name': 'Text (.txt) file', 'value': 'txt'}],
+            'transcript_download_formats_list': [
+                {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ],
             'transcript_language': u'en',
             'transcript_languages': '{"en": "English"}',
         }
@@ -396,11 +415,13 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
                 {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
-                {'display_name': 'Text (.txt) file', 'value': 'txt'}]
-            }
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ]
+        }
 
         for data in cases:
-            metadata = OrderedDict({
+            metadata = OrderedDict(
+                {
                     "saveStateUrl": "",
                     "autoplay": settings.FEATURES.get('AUTOPLAY_VIDEOS', True),
                     "streams": "1.00:3_yD_cEKoCk",
@@ -420,11 +441,14 @@ class TestGetHtmlMethod(BaseTestXmodule):
                     "ytTestUrl": "gdata.youtube.com/feeds/api/videos/",
                     "ytImageUrl": "http://img.youtube.com/vi/{youtube_id}/0.jpg",
                     "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'translation').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'translation'
+                    ).rstrip('/?'),
                     "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'available_translations'
+                    ).rstrip('/?'),
                     "autohideHtml5": False,
-                    })
+                }
+            )
             DATA = SOURCE_XML.format(
                 download_video=data['download_video'],
                 source=data['source'],
@@ -434,22 +458,21 @@ class TestGetHtmlMethod(BaseTestXmodule):
             context = self.item_descriptor.render(STUDENT_VIEW).content
 
             expected_context = dict(initial_context)
-
-
             metadata.update({
                     'transcriptTranslationUrl': self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'translation'
-                        ).rstrip('/?'),
+                    ).rstrip('/?'),
                     'transcriptAvailableTranslationsUrl': self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'available_translations'
-                        ).rstrip('/?'),
+                    ).rstrip('/?'),
                     'saveStateUrl': self.item_descriptor.xmodule_runtime.ajax_url + '/save_user_state',
                     'sources': data['result'].get('sources', '[]'),
-                    })
+            })
             expected_context['metadata'] = json.dumps(metadata)
             expected_context.update({
                     'id': self.item_descriptor.location.html_id(),
-                    'download_video_link': data['result'].get('download_video_link'),})
+                    'download_video_link': data['result'].get('download_video_link'),
+            })
 
             self.assertEqual(
                 context,
@@ -555,8 +578,10 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
                 {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
-                {'display_name': 'Text (.txt) file', 'value': 'txt'}],
-            'metadata': OrderedDict({
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ],
+            'metadata': OrderedDict(
+                {
                     "saveStateUrl": "",
                     "autoplay": False,
                     "streams": "1.00:3_yD_cEKoCk",
@@ -576,12 +601,15 @@ class TestGetHtmlMethod(BaseTestXmodule):
                     "ytTestUrl": "gdata.youtube.com/feeds/api/videos/",
                     "ytImageUrl": "http://img.youtube.com/vi/{youtube_id}/0.jpg",
                     "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'translation').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'translation'
+                    ).rstrip('/?'),
                     "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'available_translations'
+                    ).rstrip('/?'),
                     "autohideHtml5": False
-                    })
-            }
+                }
+            )
+        }
 
         DATA = SOURCE_XML.format(
             download_video=data['download_video'],
@@ -606,7 +634,8 @@ class TestGetHtmlMethod(BaseTestXmodule):
         expected_context['metadata'] = json.dumps(expected_context['metadata'])
         expected_context.update({
                 'id': self.item_descriptor.location.html_id(),
-                'download_video_link': data['result']['download_video_link'],})
+                'download_video_link': data['result']['download_video_link'],
+        })
 
         self.assertEqual(
             context,
@@ -682,8 +711,10 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
                 {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
-                {'display_name': 'Text (.txt) file', 'value': 'txt'}],
-            'metadata': OrderedDict({
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ],
+            'metadata': OrderedDict(
+                {
                     "saveStateUrl": "",
                     "autoplay": settings.FEATURES.get('AUTOPLAY_VIDEOS', True),
                     "streams": "1.00:3_yD_cEKoCk",
@@ -703,12 +734,15 @@ class TestGetHtmlMethod(BaseTestXmodule):
                     "ytTestUrl": "gdata.youtube.com/feeds/api/videos/",
                     "ytImageUrl": "http://img.youtube.com/vi/{youtube_id}/0.jpg",
                     "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'translation').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'translation'
+                    ).rstrip('/?'),
                     "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
-                        self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
+                        self.item_descriptor, 'transcript', 'available_translations'
+                    ).rstrip('/?'),
                     "autohideHtml5": False
-                    })
-            }
+                }
+            )
+        }
 
         DATA = SOURCE_XML.format(
             download_video=data['download_video'],
@@ -733,7 +767,8 @@ class TestGetHtmlMethod(BaseTestXmodule):
         expected_context['metadata'] = json.dumps(expected_context['metadata'])
         expected_context.update({
                 'id': self.item_descriptor.location.html_id(),
-                'download_video_link': data['result']['download_video_link'],})
+                'download_video_link': data['result']['download_video_link'],
+        })
 
         self.assertEqual(
             context,
@@ -819,11 +854,13 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'transcript_download_format': 'srt',
             'transcript_download_formats_list': [
                 {'display_name': 'SubRip (.srt) file', 'value': 'srt'},
-                {'display_name': 'Text (.txt) file', 'value': 'txt'}]
-            }
+                {'display_name': 'Text (.txt) file', 'value': 'txt'}
+            ]
+        }
 
         for data in cases:
-            metadata = OrderedDict({
+            metadata = OrderedDict(
+                {
                     "saveStateUrl": "",
                     "autoplay": settings.FEATURES.get('AUTOPLAY_VIDEOS', True),
                     "streams": "1.00:3_yD_cEKoCk",
@@ -847,7 +884,8 @@ class TestGetHtmlMethod(BaseTestXmodule):
                     "transcriptAvailableTranslationsUrl": self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'available_translations').rstrip('/?'),
                     "autohideHtml5": False,
-                    })
+                }
+            )
 
             DATA = SOURCE_XML.format(
                 download_video=data['download_video'],
@@ -862,17 +900,18 @@ class TestGetHtmlMethod(BaseTestXmodule):
             metadata.update({
                     'transcriptTranslationUrl': self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'translation'
-                        ).rstrip('/?'),
+                    ).rstrip('/?'),
                     'transcriptAvailableTranslationsUrl': self.item_descriptor.xmodule_runtime.handler_url(
                         self.item_descriptor, 'transcript', 'available_translations'
-                        ).rstrip('/?'),
+                    ).rstrip('/?'),
                     'saveStateUrl': self.item_descriptor.xmodule_runtime.ajax_url + '/save_user_state',
                     'sources': data['result'].get('sources', '[]'),
-                    })
+            })
             expected_context['metadata'] = json.dumps(metadata)
             expected_context.update({
                     'id': self.item_descriptor.location.html_id(),
-                    'download_video_link': data['result'].get('download_video_link'),})
+                    'download_video_link': data['result'].get('download_video_link'),
+            })
 
             self.assertEqual(
                 context,
