@@ -35,6 +35,7 @@
     // Main module.
     require(
         [
+            'video/00_video_storage.js',
             'video/01_initialize.js',
             'video/025_focus_grabber.js',
             'video/035_video_accessible_menu.js',
@@ -56,6 +57,7 @@
             'video/095_video_context_menu.js'
         ],
         function (
+            VideoStorage,
             initialize, FocusGrabber, VideoAccessibleMenu, VideoControl,
             VideoFullScreen, VideoQualityControl, VideoProgressSlider,
             VideoVolumeControl, VideoSpeedControl, VideoCaption,
@@ -96,7 +98,10 @@
                 state.youtubeXhr = youtubeXhr;
                 var bumperMetadata = el.data('bumper-metadata');
 
-                if (!$.isEmptyObject(bumperMetadata)) {
+                var id = el.attr('id').replace(/video_/, '');
+                var storage = VideoStorage('VideoState', id);
+                var bumperNotShown = !storage.getItem('isBumperShown');
+                if (!$.isEmptyObject(bumperMetadata) && bumperNotShown) {
                     var bumperState = getCleanState(state, bumperMetadata);
 
                     bumperState.modules = [
