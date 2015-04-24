@@ -83,6 +83,7 @@ class VideoStudentViewHandlers(object):
         This is called to get transcript file for specific language.
 
         youtube_id: str: must be one of youtube_ids or None if HTML video
+        bumper (bool): if true, get transcripts from self.bumper_transcripts
 
         Logic flow:
 
@@ -142,11 +143,12 @@ class VideoStudentViewHandlers(object):
                 transcripts = self.transripts if not bumper else self.bumper_transcripts
                 if transcripts:
                     return get_or_create_sjson(self, transcripts, bumper)
-                else:
+                elif bumper:
                     log.info("No transcripts for video bumper.")
-                    raise NotFoundError
 
-    def get_static_transcript(self, request):
+                raise NotFoundError
+
+    def get_static_transcript(self, request, bumper=False):
         """
         Courses that are imported with the --nostatic flag do not show
         transcripts/captions properly even if those captions are stored inside
@@ -154,17 +156,25 @@ class VideoStudentViewHandlers(object):
         the static asset path of the course if the transcript can't be found
         inside the contentstore and the course has the static_asset_path field
         set.
+
+        bumper (bool): if true try to return transcripts for video bumper.
         """
         response = Response(status=404)
         # Only do redirect for English
         if not self.transcript_language == 'en':
             return response
 
-        video_id = request.GET.get('videoId', None)
-        if video_id:
-            transcript_name = video_id
+        if bumper:
+            if self.bumper_transcripts.get("en", ""):
+                transcript_name = self.bumper_transcripts.get('en')
+            else:
+                return response
         else:
-            transcript_name = self.sub
+            video_id = request.GET.get('videoId', None)
+            if video_id:
+                transcript_name = video_id
+            else:
+                transcript_name = self.sub
 
         if transcript_name:
             # Get the asset path for course
@@ -234,7 +244,7 @@ class VideoStudentViewHandlers(object):
                 log.info(ex.message)
                 # Try to return static URL redirection as last resort
                 # if no translation is required
-                return self.get_static_transcript(request)
+                return self.get_static_transcript(request, bumper=bumper)
             except (
                 TranscriptException,
                 UnicodeDecodeError,
