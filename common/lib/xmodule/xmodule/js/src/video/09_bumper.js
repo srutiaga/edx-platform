@@ -23,7 +23,7 @@ define(
             return new VideoBumper(state, element);
         }
 
-        _.bindAll(this, 'showMainVideo', 'destroy');
+        _.bindAll(this, 'showMainVideoHandler', 'destroy');
         this.dfd = $.Deferred();
         this.element = $(element);
         this.player = player;
@@ -37,21 +37,25 @@ define(
     VideoBumper.prototype = {
         initialize: function () {
             this.state.isBumper = true;
-            this.player(this.state, this.element);
+            this.player();
         },
 
         getPromise: function () {
             return this.dfd.promise();
         },
 
-        showMainVideo: function () {
+        showMainVideoHandler: function () {
             this.saveState();
+            this.showMainVideo();
+        },
+
+        showMainVideo: function () {
             this.destroy();
             this.dfd.resolve();
         },
 
-        canShowVideo: function () {
-            return (this.dfd.isResolved() || this.dfd.isRejected());
+        play: function () {
+            this.state.videoCommands.execute('play');
         },
 
         skip: function () {
@@ -61,16 +65,11 @@ define(
         skipAndDoNotShowAgain: function () {
             this.doNotShowAgain = true;
             this.skip();
-            // TODO: send a request.
         },
 
-        /**
-         * Bind any necessary function callbacks to DOM events (click, mousemove, etc.).
-         *
-         */
         bindHandlers: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
-            this.element.on(events, this.showMainVideo);
+            this.element.on(events, this.showMainVideoHandler);
         },
 
         saveState: function () {
@@ -84,10 +83,11 @@ define(
 
         destroy: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
-            this.element.off(events, this.showMainVideo);
+            this.element.off(events, this.showMainVideoHandler);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
                 this.state.videoPlayer.destroy();
             }
+            delete this.state.videoBumper;
         }
     };
 

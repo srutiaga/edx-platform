@@ -53,6 +53,7 @@
             'video/09_bumper.js',
             'video/09_save_state_plugin.js',
             'video/09_events_plugin.js',
+            'video/09_poster.js',
             'video/10_commands.js',
             'video/095_video_context_menu.js'
         ],
@@ -63,7 +64,7 @@
             VideoVolumeControl, VideoSpeedControl, VideoCaption,
             VideoPlayPlaceholder, VideoPlayPauseControl, VideoPlaySkipControl,
             VideoSkipControl, VideoBumper, VideoSaveStatePlugin,
-            VideoEventsPlugin, VideoCommands, VideoContextMenu
+            VideoEventsPlugin, VideoPoster, VideoCommands, VideoContextMenu
         ) {
             var youtubeXhr = null,
                 oldVideo = window.Video;
@@ -82,10 +83,22 @@
                     });
                 };
 
+                var player = function (state, autoplay) {
+                    return function () {
+                        state.metadata.autoplay = autoplay || false;
+                        initialize(state, element);
+                    };
+                };
+                var id = el.attr('id').replace(/video_/, '');
+                var storage = VideoStorage('VideoState', id);
+
                 state = {
                     el: el,
+                    id: id,
                     metadata: el.data('metadata'),
-                    options: {}
+                    storage: storage,
+                    options: {},
+                    youtubeXhr: youtubeXhr
                 };
 
                 state.modules = [
@@ -96,13 +109,8 @@
                     VideoEventsPlugin
                 ];
 
-                state.youtubeXhr = youtubeXhr;
                 var bumperMetadata = el.data('bumper-metadata');
-
-                var id = el.attr('id').replace(/video_/, '');
-                var storage = VideoStorage('VideoState', id);
-                var bumperNotShown = !storage.getItem('isBumperShown');
-                if (!$.isEmptyObject(bumperMetadata) && bumperNotShown) {
+                if (bumperMetadata) {
                     var bumperState = getCleanState(state, bumperMetadata);
 
                     bumperState.modules = [
@@ -110,16 +118,24 @@
                         VideoPlaySkipControl, VideoSkipControl, VideoCaption,
                         VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
                     ];
-                    bumperState.youtubeXhr = youtubeXhr;
                     bumperState.options = {
                         SaveStatePlugin: {
                             events: ['transcript_download:change', 'language_menu:change']
                         }
                     };
-                    var bumper = new VideoBumper(initialize, bumperState, element);
-                    bumper.getPromise().done(function () {
-                        state.metadata.autoplay = true;
-                        initialize(state, element);
+
+                    var bumperPlayer = player(bumperState);
+                    var bumper = new VideoBumper(bumperPlayer, bumperState, element);
+                    bumper.getPromise().done(player(state, true));
+                    var poster = new VideoPoster(state.el, {
+                        poster: el.data('poster'),
+                        onClick: function () {
+                            if (storage.getItem('isBumperShown')) {
+                                bumper.showMainVideo();
+                            } else {
+                                bumper.play();
+                            }
+                        }
                     });
                 } else {
                     initialize(state, element);

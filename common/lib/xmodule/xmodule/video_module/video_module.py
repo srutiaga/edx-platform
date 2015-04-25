@@ -36,7 +36,7 @@ from xmodule.xml_module import is_pointer_tag, name_to_pathname, deserialize_fie
 from xmodule.exceptions import NotFoundError
 
 from .transcripts_utils import VideoTranscriptsMixin
-from .video_utils import create_youtube_string, get_video_from_cdn
+from .video_utils import create_youtube_string, get_video_from_cdn, get_poster
 from bumper_utils import bumperize
 from .video_xfields import VideoFields
 from .video_handlers import VideoStudentViewHandlers, VideoStudioViewHandlers
@@ -129,6 +129,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             resource_string(module, 'js/src/video/09_bumper.js'),
             resource_string(module, 'js/src/video/09_save_state_plugin.js'),
             resource_string(module, 'js/src/video/09_events_plugin.js'),
+            resource_string(module, 'js/src/video/09_poster.js'),
             resource_string(module, 'js/src/video/095_video_context_menu.js'),
             resource_string(module, 'js/src/video/10_commands.js'),
             resource_string(module, 'js/src/video/10_main.js')
@@ -310,6 +311,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
         context = {
             'bumper_metadata': json.dumps(self.bumper['metadata']),
             'metadata': json.dumps(OrderedDict(metadata)),
+            'poster': get_poster(self),
             'branding_info': branding_info,
             'cdn_eval': cdn_eval,
             'cdn_exp_group': cdn_exp_group,

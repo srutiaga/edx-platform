@@ -14,8 +14,8 @@
 
 define(
 'video/01_initialize.js',
-['video/03_video_player.js', 'video/00_video_storage.js', 'video/00_i18n.js'],
-function (VideoPlayer, VideoStorage, i18n) {
+['video/03_video_player.js', 'video/00_i18n.js'],
+function (VideoPlayer, i18n) {
     /**
      * @function
      *
@@ -455,11 +455,10 @@ function (VideoPlayer, VideoStorage, i18n) {
     function initialize(element) {
         var self = this,
             el = this.el,
+            id = this.id,
             container = el.find('.video-wrapper'),
-            id = el.attr('id').replace(/video_/, ''),
             __dfd__ = $.Deferred(),
-            isTouch = onTouchBasedDevice() || '',
-            storage = VideoStorage('VideoState', id);
+            isTouch = onTouchBasedDevice() || '';
 
         if (isTouch) {
             el.addClass('is-touch');
@@ -468,10 +467,8 @@ function (VideoPlayer, VideoStorage, i18n) {
         $.extend(this, {
             __dfd__: __dfd__,
             container: container,
-            id: id,
             isFullScreen: false,
-            isTouch: isTouch,
-            storage: storage
+            isTouch: isTouch
         });
 
         console.log('[Video info]: Initializing video with id "%s".', id);
@@ -480,7 +477,7 @@ function (VideoPlayer, VideoStorage, i18n) {
         // are "read only", so don't modify them. All variable content lives in
         // 'state' object.
         // jQuery .data() return object with keys in lower camelCase format.
-        this.config = $.extend({}, _getConfiguration(this.metadata, storage), {
+        this.config = $.extend({}, _getConfiguration(this.metadata, this.storage), {
             element: element,
             fadeOutTimeout:     1400,
             captionsFreezeTime: 10000,
