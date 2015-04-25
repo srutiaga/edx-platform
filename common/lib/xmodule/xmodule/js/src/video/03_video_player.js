@@ -319,7 +319,9 @@ function (HTML5Video, Resizer) {
         this.el.trigger('destroy');
         this.el.off();
         this.videoPlayer.stopTimer();
-        this.resizer.destroy();
+        if (this.resizer) {
+            this.resizer.destroy();
+        }
         if (player && _.isFunction(player.destroy)) {
             player.destroy();
         }
