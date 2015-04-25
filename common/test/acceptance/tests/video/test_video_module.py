@@ -401,7 +401,7 @@ class YouTubeVideoTest(VideoBaseTest):
                 "transcripts": {
                     "en": "b7xgknqkQk8.srt"
                 },
-                "edx_video_id": "edx_video_ID"
+                "edx_video_id": "edx_video_id"
             }
         }
 

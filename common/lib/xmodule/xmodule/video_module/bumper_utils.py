@@ -9,13 +9,13 @@ from django.conf import settings
 
 try:
     import edxval.api as edxval_api
-    imported = True
 except ImportError:
     edxval_api = None
-    imported = False
-finally:
-    with open('/edx/app/edxapp/edx-platform/debuger.txt', 'w+') as f:
-        f.write(unicode(imported) + u'\n')
+
+with open('/edx/app/edxapp/edx-platform/debuger.txt', 'w+') as f:
+    f.write(unicode(type(edxval_api)) + u'\n')
+    f.write(unicode(dir(edxval_api)) + u'\n')
+    f.write(unicode(edxval_api) + u'\n')
 
 
 def is_bumper_enabled(video):
