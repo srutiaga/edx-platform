@@ -318,8 +318,9 @@ function (VideoPlayer, VideoStorage, i18n) {
     function _initializeModules(state, i18n) {
         var dfd = $.Deferred(),
             modulesList = $.map(state.modules, function(module) {
+                var options = state.options[module.moduleName] || {};
                 if (_.isFunction(module)) {
-                    return module(state, i18n);
+                    return module(state, i18n, options);
                 } else if ($.isPlainObject(module)) {
                     return module;
                 }

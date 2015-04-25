@@ -30,13 +30,13 @@ define(
         this.state = state;
         this.doNotShowAgain = false;
         this.state.videoBumper = this;
-        this.renderElements();
         this.bindHandlers();
         this.initialize();
     };
 
     VideoBumper.prototype = {
         initialize: function () {
+            this.state.isBumper = true;
             this.player(this.state, this.element);
         },
 
@@ -63,11 +63,6 @@ define(
             this.skip();
             // TODO: send a request.
         },
-
-        /**
-         * Initiate rendering of elements, and set their initial configuration.
-         */
-        renderElements: function () {},
 
         /**
          * Bind any necessary function callbacks to DOM events (click, mousemove, etc.).

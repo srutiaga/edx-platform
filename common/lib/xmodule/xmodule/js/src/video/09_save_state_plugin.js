@@ -12,14 +12,15 @@ function() {
      * @param {Object} i18n The object containing strings with translations.
      * @return {jquery Promise}
      */
-    var SaveStatePlugin = function(state, i18n) {
+    var SaveStatePlugin = function(state, i18n, options) {
         if (!(this instanceof SaveStatePlugin)) {
-            return new SaveStatePlugin(state, i18n);
+            return new SaveStatePlugin(state, i18n, options);
         }
 
         _.bindAll(this, 'onSpeedChange', 'onPause', 'bindUnloadHandler',
             'onUnload', 'onTranscriptDownload', 'onYoutubeAvailability', 'destroy');
         this.state = state;
+        this.options = _.extend({events: []}, options);
         this.state.videoSaveStatePlugin = this;
         this.i18n = i18n;
         this.initialize();
@@ -27,6 +28,8 @@ function() {
         return $.Deferred().resolve().promise();
     };
 
+
+    SaveStatePlugin.moduleName = 'SaveStatePlugin';
     SaveStatePlugin.prototype = {
         destroy: function () {
             this.saveState(true);
@@ -50,14 +53,27 @@ function() {
 
         /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
-            this.state.el.on({
+            var eventMapping = {
                 'speedchange': this.onSpeedChange,
                 'play': this.bindUnloadHandler,
                 'pause': this.onPause,
                 'transcript_download:change': this.onTranscriptDownload,
-                'youtube_availability': this.onYoutubeAvailability,
-                'destroy': this.destroy
-            });
+                'language_menu:change': this.onLanguageChange,
+                'youtube_availability': this.onYoutubeAvailability
+            };
+
+            if (this.options.events.length) {
+                _.each(this.options.events, function (eventName) {
+                    var callback;
+                    if (_.has(eventMapping, eventName)) {
+                        callback = eventMapping[eventName];
+                        this.state.el.on(eventName, callback);
+                    }
+                }, this);
+            } else {
+                this.state.el.on(eventMapping);
+            }
+            this.state.el.on('destroy', this.destroy);
         },
 
         bindUnloadHandler: _.once(function () {
@@ -93,9 +109,6 @@ function() {
 
         saveState: function (async, data) {
             if (!($.isPlainObject(data))) {
-                if (this.state.isBumper) {
-                    return;
-                }
                 data = {
                     saved_video_position: this.state.videoPlayer.currentTime
                 };
@@ -105,7 +118,7 @@ function() {
                 this.state.storage.setItem('speed', data.speed, true);
             }
 
-            if (data.hasOwnProperty('saved_video_position')) {
+            if (_.has(data, 'saved_video_position')) {
                 this.state.storage.setItem('savedVideoPosition', data.saved_video_position, true);
                 data.saved_video_position = Time.formatFull(data.saved_video_position);
             }
@@ -115,7 +128,7 @@ function() {
                 type: 'POST',
                 async: async ? true : false,
                 dataType: 'json',
-                data: data,
+                data: data
             });
         }
     };

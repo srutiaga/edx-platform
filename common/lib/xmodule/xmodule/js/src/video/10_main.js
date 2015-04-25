@@ -84,7 +84,8 @@
 
                 state = {
                     el: el,
-                    metadata: el.data('metadata')
+                    metadata: el.data('metadata'),
+                    options: {}
                 };
 
                 state.modules = [
@@ -110,7 +111,11 @@
                         VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
                     ];
                     bumperState.youtubeXhr = youtubeXhr;
-                    bumperState.isBumper = true;
+                    bumperState.options = {
+                        SaveStatePlugin: {
+                            events: ['transcript_download:change', 'language_menu:change']
+                        }
+                    };
                     var bumper = new VideoBumper(initialize, bumperState, element);
                     bumper.getPromise().done(function () {
                         state.metadata.autoplay = true;
