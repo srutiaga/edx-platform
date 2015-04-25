@@ -111,20 +111,20 @@
                 if (bumperMetadata) {
                     var bumperState = getCleanState(state, bumperMetadata);
 
-                    bumperState.modules = [
-                        VideoAccessibleMenu, VideoControl, VideoPlaySkipControl, VideoSkipControl, VideoCaption,
-                        VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
-                    ];
-                    bumperState.options = {
-                        SaveStatePlugin: {
-                            events: ['transcript_download:change', 'language_menu:change']
+                    _.extend(bumperState, {
+                        modules: [
+                            VideoAccessibleMenu, VideoControl, VideoPlaySkipControl, VideoSkipControl, VideoCaption,
+                            VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
+                        ],
+                        options: {
+                            SaveStatePlugin: {events: ['transcript_download:change', 'language_menu:change']}
                         }
-                    };
+                    });
 
                     var bumperPlayer = player(bumperState);
-                    var bumper = new VideoBumper(bumperPlayer, bumperState, element);
+                    var bumper = new VideoBumper(bumperPlayer, bumperState);
                     bumper.getPromise().done(player(state, true));
-                    var poster = new VideoPoster(state.el, {
+                    new VideoPoster(state.el, {
                         poster: el.data('poster'),
                         onClick: function () {
                             if (storage.getItem('isBumperShown')) {

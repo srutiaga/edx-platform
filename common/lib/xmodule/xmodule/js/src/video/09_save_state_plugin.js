@@ -17,8 +17,8 @@ function() {
             return new SaveStatePlugin(state, i18n, options);
         }
 
-        _.bindAll(this, 'onSpeedChange', 'onPause', 'bindUnloadHandler',
-            'onUnload', 'onTranscriptDownload', 'onYoutubeAvailability', 'destroy');
+        _.bindAll(this, 'onSpeedChange', 'saveStateHandler', 'bindUnloadHandler', 'onUnload', 'onTranscriptDownload',
+            'onYoutubeAvailability', 'destroy');
         this.state = state;
         this.options = _.extend({events: []}, options);
         this.state.videoSaveStatePlugin = this;
@@ -32,11 +32,10 @@ function() {
     SaveStatePlugin.moduleName = 'SaveStatePlugin';
     SaveStatePlugin.prototype = {
         destroy: function () {
-            this.saveState(true);
             this.state.el.off({
                 'speedchange': this.onSpeedChange,
                 'play': this.bindUnloadHandler,
-                'pause': this.onPause,
+                'pause destroy': this.saveStateHandler,
                 'transcript_download:change': this.onTranscriptDownload,
                 'language_menu:change': this.onLanguageChange,
                 'youtube_availability': this.onYoutubeAvailability,
@@ -46,20 +45,18 @@ function() {
             delete this.state.videoSaveStatePlugin;
         },
 
-        /** Initializes the module. */
         initialize: function() {
             this.bindHandlers();
         },
 
-        /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
             var eventMapping = {
                 'speedchange': this.onSpeedChange,
                 'play': this.bindUnloadHandler,
-                'pause': this.onPause,
+                'pause destroy': this.saveStateHandler,
                 'transcript_download:change': this.onTranscriptDownload,
                 'language_menu:change': this.onLanguageChange,
-                'youtube_availability': this.onYoutubeAvailability
+                'youtube_availability': this.onYoutubeAvailability,
             };
 
             if (this.options.events.length) {
@@ -86,7 +83,7 @@ function() {
             this.state.storage.setItem('general_speed', this.state.speed);
         },
 
-        onPause: function () {
+        saveStateHandler: function () {
             this.saveState(true);
         },
 

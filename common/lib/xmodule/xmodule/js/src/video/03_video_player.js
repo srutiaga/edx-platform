@@ -354,8 +354,6 @@ function (HTML5Video, Resizer) {
         if (isFinite(this.videoPlayer.currentTime)) {
             this.videoPlayer.updatePlayTime(this.videoPlayer.currentTime);
 
-            this.el.trigger('timeupdate', [this.videoPlayer.currentTime]);
-
             // We need to pause the video if current time is smaller (or equal)
             // than end-time. Also, we must make sure that this is only done
             // once per video playing from start to end.
@@ -372,6 +370,7 @@ function (HTML5Video, Resizer) {
                     end: true
                 });
             }
+            this.el.trigger('timeupdate', [this.videoPlayer.currentTime]);
         }
     }
 

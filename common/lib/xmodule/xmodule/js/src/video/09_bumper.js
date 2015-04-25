@@ -18,21 +18,21 @@ define(
      *
      * @returns {jquery Promise}
      */
-    var VideoBumper = function (player, state, element) {
+    var VideoBumper = function (player, state) {
         if (!(this instanceof VideoBumper)) {
             return new VideoBumper(state, element);
         }
 
         _.bindAll(this, 'showMainVideoHandler', 'destroy', 'skipByDuration');
         this.dfd = $.Deferred();
-        this.element = $(element);
+        this.element = state.el;
         this.player = player;
         this.state = state;
         this.doNotShowAgain = false;
         this.state.videoBumper = this;
         this.bindHandlers();
         this.initialize();
-        this.state.config.maxBumperDuration = 5; // seconds
+        this.maxBumperDuration = 5; // seconds
     };
 
     VideoBumper.prototype = {
@@ -68,7 +68,7 @@ define(
         },
 
         skipByDuration: function (event, time) {
-            if (time > this.state.config.maxBumperDuration) {
+            if (time > this.maxBumperDuration) {
                 this.showMainVideoHandler();
             }
         },
@@ -91,7 +91,7 @@ define(
         destroy: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.off(events, this.showMainVideoHandler);
-             this.element.off('timeupdate', this.skipByDuration);
+            this.element.off('timeupdate', this.skipByDuration);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
                 this.state.videoPlayer.destroy();
             }
