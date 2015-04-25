@@ -40,9 +40,9 @@
                         });
                     });
 
-                    // it('parse available video speeds', function () {
-                    //     expect(this.state.speeds).toEqual(['0.50', '1.0', '1.50']);
-                    // });
+                    it('parse available video speeds', function () {
+                        expect(this.state.speeds).toEqual(['0.50', '1.0', '1.50']);
+                    });
 
                     it('set current video speed via cookie', function () {
                         expect(this.state.speed).toEqual('1.50');
