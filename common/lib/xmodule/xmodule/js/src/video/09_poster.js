@@ -33,7 +33,7 @@ define(
     VideoPoster.moduleName = 'Poster';
     VideoPoster.prototype = {
         template: _.template([
-            '<div class="poster" ',
+            '<div class="poster-<%= type %>" ',
                 'style="background-image: url(<%= url %>)">',
                 '<span tabindex="0" class="btn-play" aria-label="',
                     gettext('Play video'), '"></span>',
@@ -44,7 +44,10 @@ define(
             if (!this.options.poster) {
                 return;
             }
-            this.el = $(this.template({url: this.options.poster}));
+            this.el = $(this.template({
+                url: this.options.poster.url,
+                type: this.options.poster.type
+            }));
             this.render();
             this.bindHandlers();
         },

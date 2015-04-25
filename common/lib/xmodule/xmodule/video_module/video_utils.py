@@ -86,10 +86,14 @@ def get_poster(video):
     if not video.bumper.get("enabled"):
         return None
 
+    poster = {"url": "", "type": ""}
+
     if video.youtube_streams:
         youtube_id = video.youtube_streams.split('1.00:')[1].split(',')[0]
-        poster = settings.YOUTUBE['IMAGE_API'].format(youtube_id=youtube_id)
+        poster["url"] = settings.YOUTUBE['IMAGE_API'].format(youtube_id=youtube_id)
+        poster["type"] = "youtube"
     else:
-        poster = "https://www.edx.org/sites/default/files/theme/edx-logo-header.png"
+        poster["url"] = "https://www.edx.org/sites/default/files/theme/edx-logo-header.png"
+        poster["type"] = "html5"
 
-    return poster
+    return json.dumps(poster)
