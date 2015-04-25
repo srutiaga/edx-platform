@@ -268,7 +268,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             'autoplay': settings.FEATURES.get('AUTOPLAY_VIDEOS', False),
             'streams': self.youtube_streams,
             'sub': self.sub,
-            'sources': json.dumps(sources),
+            'sources': sources,
 
             # This won't work when we move to data that
             # isn't on the filesystem
