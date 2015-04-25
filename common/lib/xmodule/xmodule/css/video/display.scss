@@ -805,7 +805,7 @@ div.video {
   }
 
   .poster-youtube {
-    @extend %ui-depth4;
+    @extend %ui-depth3;
     position: absolute;
     top: 0;
     left: 0;
@@ -817,17 +817,9 @@ div.video {
     background-color: #000;
   }
 
-    .poster-html5 {
-    @extend %ui-depth3;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-position: 50% 50%;
-    background-repeat: repeat;
+  .poster-html5 {
+    @extend .poster-youtube;
     background-size: 15%;
-    background-color: #000;
   }
 }
 

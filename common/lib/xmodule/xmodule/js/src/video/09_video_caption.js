@@ -900,7 +900,7 @@ function (Sjson, AsyncProcess) {
             ) {
                 // In case of html5 autoshowing subtitles, we adjust height of
                 // subs, by height of scrollbar.
-                height = state.videoControl.el.height() +
+                height = state.el.find('.video-controls').height() +
                     0.5 * state.el.find('.slider').height();
                 // Height of videoControl does not contain height of slider.
                 // css is set to absolute, to avoid yanking when slider
