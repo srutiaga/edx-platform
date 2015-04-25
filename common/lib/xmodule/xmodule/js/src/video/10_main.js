@@ -114,10 +114,11 @@
                     _.extend(bumperState, {
                         modules: [
                             VideoAccessibleMenu, VideoControl, VideoPlaySkipControl, VideoSkipControl, VideoCaption,
-                            VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
+                            VideoVolumeControl, VideoCommands, VideoSaveStatePlugin, VideoEventsPlugin
                         ],
                         options: {
-                            SaveStatePlugin: {events: ['transcript_download:change', 'language_menu:change']}
+                            SaveStatePlugin: {events: ['transcript_download:change', 'language_menu:change']},
+                            EventsPlugin: {data: {is_bumper: true}}
                         }
                     });
 

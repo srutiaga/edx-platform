@@ -70,6 +70,7 @@ define(
         skipByDuration: function (event, time) {
             if (time > this.maxBumperDuration) {
                 this.showMainVideoHandler();
+                this.element.trigger('ended');
             }
         },
 

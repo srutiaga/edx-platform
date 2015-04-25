@@ -12,15 +12,16 @@ function() {
      * @param {Object} i18n The object containing strings with translations.
      * @return {jquery Promise}
      */
-    var EventsPlugin = function(state, i18n) {
+    var EventsPlugin = function(state, i18n, options) {
         if (!(this instanceof EventsPlugin)) {
-            return new EventsPlugin(state, i18n);
+            return new EventsPlugin(state, i18n, options);
         }
 
         _.bindAll(this, 'onReady', 'onPlay', 'onPause', 'onEnded', 'onSeek',
             'onSpeedChange', 'onShowLanguageMenu', 'onHideLanguageMenu',
             'onShowCaptions', 'onHideCaptions', 'destroy');
         this.state = state;
+        this.options = _.extend({}, options);
         this.state.videoEventsPlugin = this;
         this.i18n = i18n;
         this.initialize();
@@ -28,6 +29,7 @@ function() {
         return $.Deferred().resolve().promise();
     };
 
+    EventsPlugin.moduleName = 'EventsPlugin';
     EventsPlugin.prototype = {
         destroy: function () {
             this.state.el.off({
@@ -36,6 +38,7 @@ function() {
                 'pause': this.onPause,
                 'ended': this.onEnded,
                 'seek': this.onSeek,
+                'skip': this.onSkip,
                 'speedchange': this.onSpeedChange,
                 'language_menu:show': this.onShowLanguageMenu,
                 'language_menu:hide': this.onHideLanguageMenu,
@@ -46,12 +49,10 @@ function() {
             delete this.state.videoEventsPlugin;
         },
 
-        /** Initializes the module. */
         initialize: function() {
             this.bindHandlers();
         },
 
-        /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
             this.state.el.on({
                 'ready': this.onReady,
@@ -59,6 +60,7 @@ function() {
                 'pause': this.onPause,
                 'ended': this.onEnded,
                 'seek': this.onSeek,
+                'skip': this.onSkip,
                 'speedchange': this.onSpeedChange,
                 'language_menu:show': this.onShowLanguageMenu,
                 'language_menu:hide': this.onHideLanguageMenu,
@@ -82,6 +84,12 @@ function() {
 
         onEnded: function () {
             this.log('stop_video', {currentTime: this.getCurrentTime()});
+        },
+
+        onSkip: function (event, doNotShowAgain) {
+            var info = {currentTime: this.getCurrentTime()},
+                eventName = doNotShowAgain ? 'skip_video' : 'do_not_show_again_video';
+            this.log(eventName, info);
         },
 
         onSeek: function (event, time, oldTime, type) {
@@ -125,10 +133,9 @@ function() {
             var logInfo = _.extend({
                 id: this.state.id,
                 code: this.state.isYoutubeType() ? this.state.youtubeId() : 'html5'
-            }, data);
+            }, data, this.options.data);
             Logger.log(eventName, logInfo);
         }
-
     };
 
     return EventsPlugin;
