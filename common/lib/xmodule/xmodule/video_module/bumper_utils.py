@@ -41,7 +41,7 @@ def bumperize(video):
         'enabled': is_bumper_enabled(video),
         'edx_video_id': "",
         'transcripts': {},
-        'metadata': {}
+        'metadata': None,
     }
 
     if not video.bumper['enabled']:
