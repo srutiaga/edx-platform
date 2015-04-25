@@ -122,7 +122,6 @@ function (HTML5Video, Resizer) {
         state.videoPlayer.stopAtEndTime = true;
 
         state.videoPlayer.playerVars = {
-            autoplay: state.config.autoplay ? 1 : 0,
             controls: 0,
             wmode: 'transparent',
             rel: 0,
@@ -686,6 +685,10 @@ function (HTML5Video, Resizer) {
         }
 
         this.el.trigger('ready', arguments);
+
+        if (this.config.autoplay) {
+            this.videoPlayer.play();
+        }
     }
 
     function onStateChange(event) {
