@@ -256,6 +256,10 @@ function () {
             // create it using native JS.
             this.video = document.createElement('video');
 
+            if (this.config.playerVars.autoplay) {
+                this.video.autoplay = true;
+            }
+
             errorMessage = [
                 gettext('This browser cannot play .mp4, .ogg, or .webm files.'),
                 gettext('Try using a different browser, such as Google Chrome.')
