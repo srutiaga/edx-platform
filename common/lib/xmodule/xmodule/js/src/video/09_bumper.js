@@ -23,7 +23,7 @@ define(
             return new VideoBumper(state, element);
         }
 
-        _.bindAll(this, 'showMainVideoHandler', 'destroy');
+        _.bindAll(this, 'showMainVideoHandler', 'destroy', 'skipByDuration');
         this.dfd = $.Deferred();
         this.element = $(element);
         this.player = player;
@@ -32,6 +32,7 @@ define(
         this.state.videoBumper = this;
         this.bindHandlers();
         this.initialize();
+        this.state.config.maxBumperDuration = 5; // seconds
     };
 
     VideoBumper.prototype = {
@@ -67,9 +68,16 @@ define(
             this.skip();
         },
 
+        skipByDuration: function (event, time) {
+            if (time > this.state.config.maxBumperDuration) {
+                this.showMainVideoHandler();
+            }
+        },
+
         bindHandlers: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.on(events, this.showMainVideoHandler);
+            this.element.on('timeupdate', this.skipByDuration);
         },
 
         saveState: function () {
@@ -84,6 +92,7 @@ define(
         destroy: function () {
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.off(events, this.showMainVideoHandler);
+             this.element.off('timeupdate', this.skipByDuration);
             if (_.isFunction(this.state.videoPlayer.destroy)) {
                 this.state.videoPlayer.destroy();
             }
