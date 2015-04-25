@@ -9,8 +9,13 @@ from django.conf import settings
 
 try:
     import edxval.api as edxval_api
+    imported = True
 except ImportError:
     edxval_api = None
+    imported = False
+finally:
+    with open('/edx/app/edxapp/edx-platform/debuger.txt', 'w+') as f:
+        f.write(unicode(imported) + u'\n')
 
 
 def is_bumper_enabled(video):
@@ -48,6 +53,10 @@ def bumperize(video):
         return
 
     bumper_settings = getattr(video, 'video_bumper', {})
+    with open('/edx/app/edxapp/edx-platform/debuger.txt', 'w+') as f:
+        f.write(unicode(bumper_settings) + u'\n')
+        f.write(unicode(video.bumper) + u'\n')
+
     try:
         edx_video_id, transcripts = bumper_settings['edx_video_id'], bumper_settings['transcripts']
     except TypeError, KeyError:

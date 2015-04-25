@@ -395,7 +395,17 @@ class YouTubeVideoTest(VideoBaseTest):
             'time_to_response': 2.0,
             'youtube_api_blocked': True,
         })
-        self.metadata = self.metadata_for_mode('youtube_html5')
+
+        additional_data = {
+            'video_bumper': {
+                "transcripts": {
+                    "en": "b7xgknqkQk8.srt"
+                },
+                "video": "edx_video_ID"
+            }
+        }
+
+        self.metadata = self.metadata_for_mode('youtube_html5', additional_data=additional_data)
 
         self.navigate_to_video()
 
