@@ -37,7 +37,6 @@ define(
 
     VideoBumper.prototype = {
         initialize: function () {
-            this.state.isBumper = true;
             this.player();
         },
 

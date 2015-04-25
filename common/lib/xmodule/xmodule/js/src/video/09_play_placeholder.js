@@ -39,9 +39,7 @@ function() {
         },
 
         shouldBeShown: function () {
-            return (/iPad|Android/i.test(this.state.isTouch[0]) &&
-                !this.state.isYoutubeType()) ||
-                this.state.isBumper;
+            return /iPad|Android/i.test(this.state.isTouch[0]) && !this.state.isYoutubeType()
         },
 
         /** Initializes the module. */

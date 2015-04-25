@@ -84,7 +84,7 @@ def get_poster(video):
     Poster metadata is dict of youtube url for image thumbnail and edx logo
     """
     if not video.bumper.get("enabled"):
-        return None
+        return
 
     poster = {"url": "", "type": ""}
 
@@ -96,4 +96,4 @@ def get_poster(video):
         poster["url"] = "https://www.edx.org/sites/default/files/theme/edx-logo-header.png"
         poster["type"] = "html5"
 
-    return json.dumps(poster)
+    return poster

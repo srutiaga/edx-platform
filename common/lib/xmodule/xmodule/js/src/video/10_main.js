@@ -102,11 +102,9 @@
                 };
 
                 state.modules = [
-                    FocusGrabber, VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder,
-                    VideoPlayPauseControl, VideoProgressSlider, VideoSpeedControl,
-                    VideoVolumeControl, VideoQualityControl, VideoFullScreen,
-                    VideoCaption, VideoCommands, VideoContextMenu, VideoSaveStatePlugin,
-                    VideoEventsPlugin
+                    FocusGrabber, VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder, VideoPlayPauseControl,
+                    VideoProgressSlider, VideoSpeedControl, VideoVolumeControl, VideoQualityControl, VideoFullScreen,
+                    VideoCaption, VideoCommands, VideoContextMenu, VideoSaveStatePlugin, VideoEventsPlugin
                 ];
 
                 var bumperMetadata = el.data('bumper-metadata');
@@ -114,8 +112,7 @@
                     var bumperState = getCleanState(state, bumperMetadata);
 
                     bumperState.modules = [
-                        VideoAccessibleMenu, VideoControl, VideoPlayPlaceholder,
-                        VideoPlaySkipControl, VideoSkipControl, VideoCaption,
+                        VideoAccessibleMenu, VideoControl, VideoPlaySkipControl, VideoSkipControl, VideoCaption,
                         VideoVolumeControl, VideoCommands, VideoSaveStatePlugin
                     ];
                     bumperState.options = {

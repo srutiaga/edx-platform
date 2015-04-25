@@ -1,6 +1,5 @@
 (function (define) {
 
-// VideoCaption module.
 define(
 'video/09_poster.js',
 [], function () {
