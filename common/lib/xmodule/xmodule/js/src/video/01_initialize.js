@@ -641,7 +641,7 @@ function (VideoPlayer, i18n) {
     //
     //     Create a separate array of available speeds.
     function parseSpeed() {
-        this.speeds = _.values(this.videos).sort();
+        this.speeds = _.keys(this.videos).sort();
     }
 
     function setSpeed(newSpeed) {
