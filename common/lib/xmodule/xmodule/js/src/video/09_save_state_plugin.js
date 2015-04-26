@@ -18,7 +18,7 @@ function() {
         }
 
         _.bindAll(this, 'onSpeedChange', 'saveStateHandler', 'bindUnloadHandler', 'onUnload', 'onTranscriptDownload',
-            'onYoutubeAvailability', 'destroy');
+            'onYoutubeAvailability', 'onLanguageChange', 'destroy');
         this.state = state;
         this.options = _.extend({events: []}, options);
         this.state.videoSaveStatePlugin = this;

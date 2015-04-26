@@ -277,7 +277,7 @@ function (Sjson, AsyncProcess) {
                 data, youtubeId;
 
             if (this.loaded) {
-                return false;
+                this.hideCaptions(false);
             } else {
                 this.hideCaptions(state.hide_captions, false);
             }
