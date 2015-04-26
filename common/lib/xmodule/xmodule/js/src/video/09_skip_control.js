@@ -28,7 +28,7 @@ function() {
 
     SkipControl.prototype = {
         template: [
-            '<a class="video_control skip" href="#" title="',
+            '<a class="video_control skip skip-control" href="#" title="',
                 gettext('Do not show again'), '" role="button" aria-disabled="false">',
                 gettext('Do not show again'),
             '</a>'

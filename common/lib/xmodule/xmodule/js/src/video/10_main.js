@@ -70,7 +70,18 @@
                 oldVideo = window.Video;
 
             window.Video = function (element) {
-                var el = $(element).find('.video'), state;
+                var el = $(element).find('.video'),
+                    id = el.attr('id').replace(/video_/, ''),
+                    storage = VideoStorage('VideoState', id),
+                    state = {
+                        el: el,
+                        id: id,
+                        metadata: el.data('metadata'),
+                        storage: storage,
+                        options: {},
+                        youtubeXhr: youtubeXhr
+                    };
+
                 var getCleanState = function (state, metadata) {
                     return $.extend(true, {}, state, {metadata: metadata}, {
                         metadata: {
@@ -88,17 +99,6 @@
                         state.metadata.autoplay = autoplay || false;
                         initialize(state, element);
                     };
-                };
-                var id = el.attr('id').replace(/video_/, '');
-                var storage = VideoStorage('VideoState', id);
-
-                state = {
-                    el: el,
-                    id: id,
-                    metadata: el.data('metadata'),
-                    storage: storage,
-                    options: {},
-                    youtubeXhr: youtubeXhr
                 };
 
                 state.modules = [
@@ -122,8 +122,8 @@
                         }
                     });
 
-                    var bumperPlayer = player(bumperState);
-                    var bumper = new VideoBumper(bumperPlayer, bumperState);
+                    var bumperPlayer = player(bumperState),
+                        bumper = new VideoBumper(bumperPlayer, bumperState);
                     bumper.getPromise().done(player(state, true));
                     new VideoPoster(state.el, {
                         poster: el.data('poster'),

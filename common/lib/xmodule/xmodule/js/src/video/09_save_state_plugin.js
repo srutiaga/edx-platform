@@ -56,7 +56,7 @@ function() {
                 'pause destroy': this.saveStateHandler,
                 'transcript_download:change': this.onTranscriptDownload,
                 'language_menu:change': this.onLanguageChange,
-                'youtube_availability': this.onYoutubeAvailability,
+                'youtube_availability': this.onYoutubeAvailability
             };
 
             if (this.options.events.length) {
