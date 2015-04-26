@@ -18,7 +18,7 @@ function() {
         }
 
         _.bindAll(this, 'onReady', 'onPlay', 'onPause', 'onEnded', 'onSeek',
-            'onSpeedChange', 'onShowLanguageMenu', 'onHideLanguageMenu',
+            'onSpeedChange', 'onShowLanguageMenu', 'onHideLanguageMenu', 'onSkip',
             'onShowCaptions', 'onHideCaptions', 'destroy');
         this.state = state;
         this.options = _.extend({}, options);
@@ -88,7 +88,7 @@ function() {
 
         onSkip: function (event, doNotShowAgain) {
             var info = {currentTime: this.getCurrentTime()},
-                eventName = doNotShowAgain ? 'skip_video' : 'do_not_show_again_video';
+                eventName = doNotShowAgain ? 'do_not_show_again_video': 'skip_video';
             this.log(eventName, info);
         },
 
