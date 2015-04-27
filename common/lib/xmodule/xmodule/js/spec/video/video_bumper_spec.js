@@ -10,8 +10,9 @@
                 .createSpy('onTouchBasedDevice').andReturn(null);
 
 // Start the player with video bumper
-            state = jasmine.initializePlayer();
-            spyOn(this.state.videoCommands, 'execute');
+            state = jasmine.initializePlayer('video_with_bumper.html');
+            spyOn(state.bumperState.videoCommands, 'execute');
+            spyOn(state.bumperState.videoSaveStatePlugin, 'saveState');
         });
 
         afterEach(function () {
@@ -21,25 +22,64 @@
             window.onTouchBasedDevice = oldOTBD;
         });
 
+        it('can render the poster', function () {
+            expect($('.poster')).toExist();
+        });
+
         it('can render the bumper video', function () {
-            expect().toExist();
+            expect($('.is-bumper')).toExist();
+        });
+
+        it('can start bumper playing on click', function () {
+            $('.poster .btn-play').click();
+            expect(state.bumperState.videoCommands.execute).toHaveBeenCalledWith('play');
         });
 
         it('can show the main video on error', function () {
-            expect().toBe();
+            state.bumperState.el.trigger('error');
+            expect($('.is-bumper')).not.toExist();
+
+            waitsFor(function () {
+                return state.el.hasClass('is-playing');
+            }, 'Player is not plaing.', WAIT_TIMEOUT);
         });
 
         it('can show the main video once bumper ends', function () {
-            expect().toBe();
+            //state.bumperState.videoPlayer.onEnded();
+            state.bumperState.el.trigger('ended');
+            expect($('.is-bumper')).not.toExist();
+
+
+            waitsFor(function () {
+                return state.el.hasClass('is-initialized');
+            }, 'Player is not initialized.', WAIT_TIMEOUT);
+
+            //waitsFor(function () {
+            //    return expect($('.video-controls')).toExist();
+            //}, 'Player is not plaing.', WAIT_TIMEOUT);
+
+            waitsFor(function () {
+                return state.el.hasClass('is-playing');
+            }, 'Player is not plaing.', WAIT_TIMEOUT);
+
         });
 
         it('can show the main video on skip', function () {
-            expect().toBe();
+            state.bumperState.el.trigger('skip');
+            expect($('.is-bumper')).not.toExist();
+
+            waitsFor(function () {
+                return state.el.hasClass('is-playing');
+            }, 'Player is not plaing.', WAIT_TIMEOUT);
         });
 
         it('can stop the bumper video playing if it is too long', function () {
-            // duration > maxDuration
-            expect().toBe();
+            state.bumperState.el.trigger('timeupdate', [state.bumperState.videoBumper.maxBumperDuration + 1]);
+            expect($('.is-bumper')).not.toExist();
+
+            waitsFor(function () {
+                return state.el.hasClass('is-playing');
+            }, 'Player is not plaing.', WAIT_TIMEOUT);
         });
 
         it('can save appropriate states correctly', function () {

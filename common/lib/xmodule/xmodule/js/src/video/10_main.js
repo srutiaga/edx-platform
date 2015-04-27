@@ -124,6 +124,7 @@
 
                     var bumperPlayer = player(bumperState),
                         bumper = new VideoBumper(bumperPlayer, bumperState);
+                    state.bumperState = bumperState;
                     bumper.getPromise().done(player(state, true));
                     new VideoPoster(state.el, {
                         poster: el.data('poster'),

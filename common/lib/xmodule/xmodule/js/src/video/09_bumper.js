@@ -26,6 +26,7 @@ define(
         _.bindAll(this, 'showMainVideoHandler', 'destroy', 'skipByDuration');
         this.dfd = $.Deferred();
         this.element = state.el;
+        this.element.addClass('is-bumper');
         this.player = player;
         this.state = state;
         this.doNotShowAgain = false;
@@ -93,6 +94,7 @@ define(
             var events = ['ended', 'skip', 'error'].join(' ');
             this.element.off(events, this.showMainVideoHandler);
             this.element.off('timeupdate', this.skipByDuration);
+            this.element.removeClass('is-bumper');
             if (_.isFunction(this.state.videoPlayer.destroy)) {
                 this.state.videoPlayer.destroy();
             }
