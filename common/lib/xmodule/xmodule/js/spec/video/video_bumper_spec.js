@@ -82,6 +82,12 @@
             }, 'Player is not plaing.', WAIT_TIMEOUT);
         });
 
+        it('can save appropriate states correctly on ended', function () {
+            state.bumperState.el.trigger('ended');
+            expect(state.bumperState.videoSaveStatePlugin.saveState).toHaveBeenCalledWith(true,
+                                                                                          {date_last_view_bumper: true});
+        });
+
         it('can save appropriate states correctly', function () {
             // save state in `skip`, `ended`, `error`
             expect().toBe();
