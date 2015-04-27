@@ -12,11 +12,6 @@ try:
 except ImportError:
     edxval_api = None
 
-with open('/edx/app/edxapp/edx-platform/debuger.txt', 'w+') as f:
-    f.write(unicode(type(edxval_api)) + u'\n')
-    f.write(unicode(dir(edxval_api)) + u'\n')
-    f.write(unicode(edxval_api) + u'\n')
-
 
 def is_bumper_enabled(video):
     """
@@ -53,9 +48,6 @@ def bumperize(video):
         return
 
     bumper_settings = getattr(video, 'video_bumper', {})
-    with open('/edx/app/edxapp/edx-platform/debuger.txt', 'w+') as f:
-        f.write(unicode(bumper_settings) + u'\n')
-        f.write(unicode(video.bumper) + u'\n')
 
     try:
         edx_video_id, transcripts = bumper_settings['edx_video_id'], bumper_settings['transcripts']

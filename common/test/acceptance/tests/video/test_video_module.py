@@ -689,6 +689,25 @@ class YouTubeVideoTest(VideoBaseTest):
 
         self.assertGreaterEqual(self.video.seconds, 10)
 
+    def test_video_bumper_render(self):
+        """
+        """
+        additional_data = {
+            'video_bumper': {
+                "transcripts": {
+                    "en": "b7xgknqkQk8.srt"
+                },
+                "edx_video_id": "edx_video_id"
+            }
+        }
+        self.metadata = self.metadata_for_mode('youtube_html5', additional_data=additional_data)
+
+        self.navigate_to_video()
+        # self.video.click_player_button('play')
+        # self.assertFalse(self.video.is_quality_button_active)
+        # self.video.click_player_button('quality')
+        # self.assertTrue(self.video.is_quality_button_active)
+
 
 class YouTubeHtml5VideoTest(VideoBaseTest):
     """ Test YouTube HTML5 Video Player """
