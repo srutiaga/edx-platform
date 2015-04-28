@@ -2,7 +2,7 @@
     'use strict';
 
     describe('VideoBumper', function () {
-        var state, oldOTBD;
+        var state, oldOTBD, saveState;
 
         beforeEach(function () {
             oldOTBD = window.onTouchBasedDevice;
@@ -12,7 +12,8 @@
 // Start the player with video bumper
             state = jasmine.initializePlayer('video_with_bumper.html');
             spyOn(state.bumperState.videoCommands, 'execute');
-            spyOn(state.bumperState.videoSaveStatePlugin, 'saveState');
+            saveState = jasmine.createSpy('saveState');
+            state.bumperState.videoSaveStatePlugin.saveState = saveState;
         });
 
         afterEach(function () {
@@ -24,6 +25,7 @@
 
         it('can render the poster', function () {
             expect($('.poster')).toExist();
+            state.bumperState.videoBumper.destroy();
         });
 
         it('can render the bumper video', function () {
@@ -84,17 +86,31 @@
 
         it('can save appropriate states correctly on ended', function () {
             state.bumperState.el.trigger('ended');
-            expect(state.bumperState.videoSaveStatePlugin.saveState).toHaveBeenCalledWith(true,
-                                                                                          {date_last_view_bumper: true});
+            expect(state.bumperState.storage.getItem('isBumperShown')).toBe(true);
+            expect(saveState).toHaveBeenCalledWith(true, {date_last_view_bumper: true});
         });
 
-        it('can save appropriate states correctly', function () {
-            // save state in `skip`, `ended`, `error`
-            expect().toBe();
+        it('can save appropriate states correctly on skip', function () {
+            state.bumperState.el.trigger('skip');
+            expect(state.bumperState.storage.getItem('isBumperShown')).toBe(true);
+            expect(saveState).toHaveBeenCalledWith(true, {date_last_view_bumper: true});
+        });
+
+         it('can save appropriate states correctly on error', function () {
+             state.bumperState.el.trigger('error');
+             expect(state.bumperState.storage.getItem('isBumperShown')).toBe(true);
+             expect(saveState).toHaveBeenCalledWith(true, {date_last_view_bumper: true});
+        });
+
+        it('can save appropriate states correctly on skip and do not show again', function () {
+            state.bumperState.videoBumper.skipAndDoNotShowAgain();
+            expect(state.bumperState.storage.getItem('isBumperShown')).toBe(true);
+            expect(saveState).toHaveBeenCalledWith(true, {date_last_view_bumper: true, do_not_show_again_bumper: true});
         });
 
         it('can destroy itself', function () {
-            expect().toBe();
+            state.bumperState.videoBumper.destroy();
+            expect(state.bumperState.videoBumper).toBeUndefined();
         });
 
 
