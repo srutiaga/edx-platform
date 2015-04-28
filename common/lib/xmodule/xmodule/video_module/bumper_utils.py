@@ -48,9 +48,10 @@ def bumperize(video):
         return
 
     bumper_settings = getattr(video, 'video_bumper', {})
+
     try:
         edx_video_id, transcripts = bumper_settings['edx_video_id'], bumper_settings['transcripts']
-    except TypeError, KeyError:
+    except (TypeError, KeyError):
         video.bumper['enabled'] = False
         return
 

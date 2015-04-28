@@ -32,7 +32,7 @@ define(
         this.state.videoBumper = this;
         this.bindHandlers();
         this.initialize();
-        this.maxBumperDuration = 5; // seconds
+        this.maxBumperDuration = 35; // seconds
     };
 
     VideoBumper.prototype = {
