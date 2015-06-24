@@ -1326,21 +1326,22 @@ class CourseDescriptor(CourseFields, LicenseMixin, SequenceDescriptor):
 
         for chapter in self.get_children():
             for section in chapter.get_children():
-                if section.graded:
-                    xmoduledescriptors = list(yield_descriptor_descendents(section))
-                    xmoduledescriptors.append(section)
+                for vertical in section.get_children():
+                    if vertical.graded:
+                        xmoduledescriptors = list(yield_descriptor_descendents(vertical))
+                        xmoduledescriptors.append(vertical)
 
-                    # The xmoduledescriptors included here are only the ones that have scores.
-                    section_description = {
-                        'section_descriptor': section,
-                        'xmoduledescriptors': [child for child in xmoduledescriptors if child.has_score]
-                    }
+                        # The xmoduledescriptors included here are only the ones that have scores.
+                        section_description = {
+                            'section_descriptor': vertical,
+                            'xmoduledescriptors': [child for child in xmoduledescriptors if child.has_score]
+                        }
 
-                    section_format = section.format if section.format is not None else ''
-                    graded_sections[section_format] = graded_sections.get(section_format, []) + [section_description]
+                        section_format = vertical.format if vertical.format is not None else ''
+                        graded_sections[section_format] = graded_sections.get(section_format, []) + [section_description]
 
-                    all_descriptors.extend(xmoduledescriptors)
-                    all_descriptors.append(section)
+                        all_descriptors.extend(xmoduledescriptors)
+                        all_descriptors.append(vertical)
 
         return {'graded_sections': graded_sections,
                 'all_descriptors': all_descriptors, }

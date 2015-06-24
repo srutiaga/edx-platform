@@ -124,7 +124,7 @@ class SequenceModule(SequenceFields, XModule):
                 'page_title': titles[0] if titles else '',
                 'progress_status': Progress.to_js_status_str(progress),
                 'progress_detail': Progress.to_js_detail_str(progress),
-                'type': child.get_icon_class(),
+                'type': 'graded' if child.graded else child.get_icon_class(),
                 'id': child.scope_ids.usage_id.to_deprecated_string(),
             }
             if childinfo['title'] == '':

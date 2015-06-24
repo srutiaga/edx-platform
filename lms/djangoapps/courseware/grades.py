@@ -365,44 +365,59 @@ def _progress_summary(student, request, course):
                 if section_module.hide_from_toc:
                     continue
 
-                graded = section_module.graded
-                scores = []
+                verticals = []
+                for vertical_module in section_module.get_display_items():
+                    # Skip if the vertical is hidden
+                    with manual_transaction():
+                        if vertical_module.hide_from_toc:
+                            continue
 
-                module_creator = section_module.xmodule_runtime.get_module
+                        graded = vertical_module.graded
+                        scores = []
 
-                for module_descriptor in yield_dynamic_descriptor_descendants(
-                        section_module, student.id, module_creator
-                ):
-                    course_id = course.id
-                    (correct, total) = get_score(
-                        course_id, student, module_descriptor, module_creator, scores_cache=submissions_scores
-                    )
-                    if correct is None and total is None:
-                        continue
+                        module_creator = vertical_module.xmodule_runtime.get_module
 
-                    scores.append(
-                        Score(
-                            correct,
-                            total,
-                            graded,
-                            module_descriptor.display_name_with_default,
-                            module_descriptor.location
-                        )
-                    )
+                        for module_descriptor in yield_dynamic_descriptor_descendants(
+                                vertical_module, student.id, module_creator
+                        ):
+                            course_id = course.id
+                            (correct, total) = get_score(
+                                course_id, student, module_descriptor, module_creator, scores_cache=submissions_scores
+                            )
+                            if correct is None and total is None:
+                                continue
 
-                scores.reverse()
-                section_total, _ = graders.aggregate_scores(
-                    scores, section_module.display_name_with_default)
+                            scores.append(
+                                Score(
+                                    correct,
+                                    total,
+                                    graded,
+                                    module_descriptor.display_name_with_default,
+                                    module_descriptor.location
+                                )
+                            )
 
-                module_format = section_module.format if section_module.format is not None else ''
+                        scores.reverse()
+                        vertical_total, _ = graders.aggregate_scores(
+                            scores, vertical_module.display_name_with_default)
+
+                        module_format = vertical_module.format if vertical_module.format is not None else ''
+
+                        verticals.append({
+                            'display_name': vertical_module.display_name_with_default,
+                            'url_name': vertical_module.url_name,
+                            'scores': scores,
+                            'location': vertical_module.location,
+                            'vertical_total': vertical_total,
+                            'format': module_format,
+                            'due': vertical_module.due,
+                            'graded': graded,
+                        })
+
                 sections.append({
                     'display_name': section_module.display_name_with_default,
                     'url_name': section_module.url_name,
-                    'scores': scores,
-                    'section_total': section_total,
-                    'format': module_format,
-                    'due': section_module.due,
-                    'graded': graded,
+                    'verticals': verticals,
                 })
 
         chapters.append({

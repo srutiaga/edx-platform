@@ -285,6 +285,7 @@
 
             h3 {
               color: #666;
+              padding:0 0 lh(0.5) 0;
 
               span {
                 color: #999;
@@ -319,6 +320,10 @@
                   padding-right: 1em;
                 }
               }
+            }
+
+            .verticals {
+              padding-left: lh();
             }
           }
         }

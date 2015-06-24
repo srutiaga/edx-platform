@@ -152,68 +152,74 @@ from django.utils.http import urlquote_plus
 
       <div class="chapters">
         %for chapter in courseware_summary:
-        %if not chapter['display_name'] == "hidden":
-        <section>
-          <h2>${ chapter['display_name'] }</h2>
+          %if not chapter['display_name'] == "hidden":
+          <section>
+            <h2>${ chapter['display_name'] }</h2>
 
-          <div class="sections">
-            %for section in chapter['sections']:
-            <div>
-              <%
-              earned = section['section_total'].earned
-              total = section['section_total'].possible
-              percentageString = "{0:.0%}".format( float(earned)/total) if earned > 0 and total > 0 else ""
-              %>
+            <div class="sections">
+              %for section in chapter['sections']:
+                <div>
+                  <h3><a href="${reverse('courseware_section', kwargs=dict(course_id=course.id.to_deprecated_string(), chapter=chapter['url_name'], section=section['url_name']))}">${ section['display_name'] }</a></h3>
+                  %if not all([len(vertical['scores']) == 0 for vertical in section['verticals']]):
+                  <div class="verticals">
+                    %for vertical in section['verticals']:
+                      %if len(vertical['scores']) > 0:
+                        <div>
+                          <%
+                          earned = vertical['vertical_total'].earned
+                          total = vertical['vertical_total'].possible
+                          percentageString = "{0:.0%}".format( float(earned)/total) if earned > 0 and total > 0 else ""
+                          %>
 
-              <h3><a href="${reverse('courseware_section', kwargs=dict(course_id=course.id.to_deprecated_string(), chapter=chapter['url_name'], section=section['url_name']))}">
-                ${ section['display_name'] }
-                %if total > 0 or earned > 0:
-                  <span class="sr">
-                    ${_("{earned:.3n} of {total:.3n} possible points").format( earned = float(earned), total = float(total) )}
-                  </span>
-                %endif
-                </a>
-                %if total > 0 or earned > 0:
-                  <span> ${"({0:.3n}/{1:.3n}) {2}".format( float(earned), float(total), percentageString )}</span>
-                %endif
-              </h3>
-              <p>
-                ${section['format']}
+                          <b>
+                            <a href="${reverse('jump_to', kwargs=dict(course_id=course.id.to_deprecated_string(), location=vertical['location']))}">
+                            ${ vertical['display_name'] }
+                            %if total > 0 or earned > 0:
+                              <span class="sr">
+                                ${_("{earned:.3n} of {total:.3n} possible points").format( earned = float(earned), total = float(total) )}
+                              </span>
+                            %endif
 
-                %if section.get('due') is not None:
-                  <%
-                      formatted_string = get_time_display(section['due'], course.due_date_display_format, coerce_tz=settings.TIME_ZONE_DISPLAYED_FOR_DEADLINES)
-                      due_date = '' if len(formatted_string)==0 else _(u'due {date}').format(date=formatted_string)
-                  %>
-                  <em>
-                  ${due_date}
-                  </em>
-                %endif
-              </p>
+                            %if total > 0 or earned > 0:
+                              <span> ${"({0:.3n}/{1:.3n}) {2}".format( float(earned), float(total), percentageString )}</span>
+                            %endif
+                            </a>
+                          </b>
+                          <p>
+                            ${vertical['format']}
 
-              <div class="scores">
-                %if len(section['scores']) > 0:
-                  <h3> ${ _("Problem Scores: ") if section['graded'] else _("Practice Scores: ")} </h3>
-                  <ol>
-                    %for score in section['scores']:
-                    <li>${"{0:.3n}/{1:.3n}".format(float(score.earned),float(score.possible))}</li>
+                            %if vertical.get('due') is not None:
+                              <%
+                                  formatted_string = get_time_display(vertical['due'], course.due_date_display_format, coerce_tz=settings.TIME_ZONE_DISPLAYED_FOR_DEADLINES)
+                                  due_date = '' if len(formatted_string)==0 else _(u'due {date}').format(date=formatted_string)
+                              %>
+                              <em>${due_date}</em>
+                            %endif
+                          </p>
+
+                          <div class="scores">
+                            <h3> ${ _("Problem Scores: ") if vertical['graded'] else _("Practice Scores: ")} </h3>
+                            <ol>
+                              %for score in vertical['scores']:
+                              <li>${"{0:.3n}/{1:.3n}".format(float(score.earned),float(score.possible))}</li>
+                              %endfor
+                            </ol>
+                          </div>
+                        </div> <!--End vertical-->
+                      %endif
                     %endfor
-                  </ol>
-                %else:
-                  <h3 class="no-scores"> ${_("No problem scores in this section")} </h3>
-                %endif
-              </div>
-
-
-            </div> <!--End section-->
-            %endfor
-          </div> <!--End sections-->
-        </section> <!--End chapter-->
-        %endif
+                    </div> <!--End verticals-->
+                  %else:
+                    <p class="no-scores"> ${_("No problem scores in this section")}</p>
+                  %endif
+                </div> <!--End section-->
+              %endfor
+            </div> <!--End sections-->
+          </section> <!--End chapter-->
+          %endif
         %endfor
       </div> <!--End chapters-->
 
     </div>
   </div>
 </div>
-
