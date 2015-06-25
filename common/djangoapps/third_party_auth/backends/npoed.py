@@ -3,7 +3,7 @@ from social.backends.oauth import BaseOAuth2
 
 
 class NpoedBackend(BaseOAuth2):
-    name = 'npoed-oauth2'
+    name = 'sso-oauth2'
     ID_KEY = 'user_id'
     AUTHORIZATION_URL = 'http://community.npoed.ru/oauth/authorize'
     ACCESS_TOKEN_URL = 'http://community.npoed.ru/oauth/token'
