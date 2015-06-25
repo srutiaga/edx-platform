@@ -5,6 +5,7 @@ invoke the Django armature.
 """
 
 from social.backends import google, linkedin, facebook
+from .backends import npoed
 
 _DEFAULT_ICON_CLASS = 'fa-signin'
 
@@ -144,6 +145,25 @@ class FacebookOauth2(BaseProvider):
         'SOCIAL_AUTH_FACEBOOK_KEY': None,
         'SOCIAL_AUTH_FACEBOOK_SECRET': None,
     }
+
+
+class NpoedProvider(BaseProvider):
+    """ Provider for Npoed Oauth2 auth system. """
+
+    BACKEND_CLASS = npoed.NpoedBackend
+    NAME = 'NPOED'
+    SETTINGS = {
+        'SOCIAL_AUTH_NPOED_OAUTH2_KEY': None,
+        'SOCIAL_AUTH_NPOED_OAUTH2_SECRET': None,
+    }
+
+    @classmethod
+    def get_email(cls, provider_details):
+        return provider_details.get('email')
+
+    @classmethod
+    def get_name(cls, provider_details):
+        return provider_details.get('fullname')
 
 
 class Registry(object):
