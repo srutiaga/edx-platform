@@ -302,7 +302,7 @@ class AssignmentFormatGrader(CourseGrader):
         def total_with_drops(breakdown, drop_count):
             '''calculates total score for a section while dropping lowest scores'''
             #create an array of tuples with (index, mark), sorted by mark['percent'] descending
-            sorted_breakdown = sorted(enumerate(breakdown), key=lambda x: -x[1]['percent']*(x[1]['weight'] or 1))
+            sorted_breakdown = sorted(enumerate(breakdown), key=lambda x: -x[1]['percent']*(x[1]['weight']))
             # A list of the indices of the dropped scores
             dropped_indices = []
             if drop_count > 0:
@@ -335,7 +335,7 @@ class AssignmentFormatGrader(CourseGrader):
                     earned = scores[i].earned
                     possible = scores[i].possible
                     section_name = scores[i].section
-                    weight = scores[i].weight
+                    weight = scores[i].weight or 1
 
                 percentage = earned / float(possible)
                 summary_format = u"{section_type} {index} - {name} - {percent:.0%} ({earned:.3n}/{possible:.3n})"
