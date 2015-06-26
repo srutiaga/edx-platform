@@ -827,6 +827,7 @@ def create_xblock_info(xblock, data=None, metadata=None, include_ancestor_info=F
         "id": unicode(xblock.location),
         "display_name": xblock.display_name_with_default,
         "category": xblock.category,
+        "weight": getattr(xblock, 'weight', None),
         "edited_on": get_default_time_display(xblock.subtree_edited_on) if xblock.subtree_edited_on else None,
         "published": published,
         "published_on": get_default_time_display(xblock.published_on) if published and xblock.published_on else None,

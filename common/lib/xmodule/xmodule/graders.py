@@ -10,10 +10,10 @@ log = logging.getLogger("edx.courseware")
 
 # This is a tuple for holding scores, either from problems or sections.
 # Section either indicates the name of the problem or the name of the section
-Score = namedtuple("Score", "earned possible graded section module_id")
+Score = namedtuple("Score", "earned possible graded section module_id weight")
 
 
-def aggregate_scores(scores, section_name="summary"):
+def aggregate_scores(scores, section_name="summary", weight=None):
     """
     scores: A list of Score objects
     returns: A tuple (all_total, graded_total).
@@ -32,7 +32,8 @@ def aggregate_scores(scores, section_name="summary"):
         total_possible,
         False,
         section_name,
-        None
+        None,
+        weight
     )
     #selecting only graded things
     graded_total = Score(
@@ -40,7 +41,8 @@ def aggregate_scores(scores, section_name="summary"):
         total_possible_graded,
         True,
         section_name,
-        None
+        None,
+        weight
     )
 
     return all_total, graded_total
@@ -300,18 +302,22 @@ class AssignmentFormatGrader(CourseGrader):
         def total_with_drops(breakdown, drop_count):
             '''calculates total score for a section while dropping lowest scores'''
             #create an array of tuples with (index, mark), sorted by mark['percent'] descending
-            sorted_breakdown = sorted(enumerate(breakdown), key=lambda x: -x[1]['percent'])
+            sorted_breakdown = sorted(enumerate(breakdown), key=lambda x: -x[1]['percent']*(x[1]['weight'] or 1))
             # A list of the indices of the dropped scores
             dropped_indices = []
             if drop_count > 0:
                 dropped_indices = [x[0] for x in sorted_breakdown[-drop_count:]]
             aggregate_score = 0
+            aggregate_dropped_weight = 0
+
             for index, mark in enumerate(breakdown):
                 if index not in dropped_indices:
-                    aggregate_score += mark['percent']
+                    aggregate_score += mark['percent']*mark['weight']
+                else:
+                    aggregate_dropped_weight += mark['weight']
 
             if (len(breakdown) - drop_count > 0):
-                aggregate_score /= len(breakdown) - drop_count
+                aggregate_score /= (1 - aggregate_dropped_weight)
 
             return aggregate_score, dropped_indices
 
@@ -329,6 +335,7 @@ class AssignmentFormatGrader(CourseGrader):
                     earned = scores[i].earned
                     possible = scores[i].possible
                     section_name = scores[i].section
+                    weight = scores[i].weight
 
                 percentage = earned / float(possible)
                 summary_format = u"{section_type} {index} - {name} - {percent:.0%} ({earned:.3n}/{possible:.3n})"
@@ -353,7 +360,8 @@ class AssignmentFormatGrader(CourseGrader):
             )
 
             breakdown.append({'percent': percentage, 'label': short_label,
-                              'detail': summary, 'category': self.category})
+                              'detail': summary, 'category': self.category,
+                              'weight': weight})
 
         total_percent, dropped_indices = total_with_drops(breakdown, self.drop_count)
 

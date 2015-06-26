@@ -1,0 +1,8 @@
+<h3 class="modal-section-title"><label for="weight" class="label"><%= gettext('Weight') %></label></h3>
+<div class="modal-section-content weight">
+  <ul class="list-fields list-input">
+    <li class="field field-weight field-select">
+      <input class="input" id="weight" type="number" value="<%= xblockInfo.get('weight') %>" min="0" />
+    </li>
+  </ul>
+</div>

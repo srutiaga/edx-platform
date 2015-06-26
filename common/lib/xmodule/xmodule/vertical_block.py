@@ -5,6 +5,7 @@ import logging
 from copy import copy
 from lxml import etree
 from xblock.core import XBlock
+from xblock.fields import Scope, Float
 from xblock.fragment import Fragment
 from xmodule.mako_module import MakoTemplateBlockBase
 from xmodule.progress import Progress
@@ -12,6 +13,9 @@ from xmodule.seq_module import SequenceFields
 from xmodule.studio_editable import StudioEditableBlock
 from xmodule.x_module import STUDENT_VIEW, XModuleFields
 from xmodule.xml_module import XmlParserMixin
+
+# Make '_' a no-op so we can scrape strings
+_ = lambda text: text
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +28,14 @@ class VerticalBlock(SequenceFields, XModuleFields, StudioEditableBlock, XmlParse
     """
     Layout XBlock for rendering subblocks vertically.
     """
+    weight = Float(
+        display_name=_("Problem Weight"),
+        help=_("Defines the number of points each problem is worth. "
+               "If the value is not set, each response field in the problem is worth one point."),
+        values={"min": 0, "step": .1},
+        scope=Scope.settings
+    )
+
     mako_template = 'widgets/sequence-edit.html'
     js_module_name = "VerticalBlock"
 
