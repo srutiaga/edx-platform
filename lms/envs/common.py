@@ -2538,6 +2538,7 @@ CREDIT_PROVIDER_SECRET_KEYS = {}
 # or denied for credit.
 CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 
-################################ Settings for Grading service ################################
+################################ Settings for Grading Service ################################
+
 # Url for third party application to make custom grading algorithms
-GRADING_APPLICATION_URL = 'http://localhost:9000/tracking_log/.json'
+GRADING_SERVICE_API = 'http://localhost:9000/tracking_log/.json'
