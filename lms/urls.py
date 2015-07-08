@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 import django.contrib.auth.views
 from microsite_configuration import microsite
 import auth_exchange.views
+from grading import receivers
+
 
 # Uncomment the next two lines to enable the admin:
 if settings.DEBUG or settings.FEATURES.get('ENABLE_DJANGO_ADMIN_SITE'):
