@@ -33,7 +33,7 @@ def score_change_handler(sender, **kwargs):  # pylint: disable=unused-argument
         )
         return
 
-    grade_info = json.dumps({
+    data = json.dumps({
         'points_possible': points_possible,
         'points_earned': points_earned,
         'user_id': user_id,
@@ -41,10 +41,10 @@ def score_change_handler(sender, **kwargs):  # pylint: disable=unused-argument
         'usage_id': usage_id,
     })
 
-    headers = {'content-type': 'application/json'}
     url = urlparse.urljoin(settings.GRADING_SERVICE_API, '/scores/')
 
     try:
-        requests.post(url, data=grade_info, headers=headers)
+        headers = {'content-type': 'application/json'}
+        requests.post(settings.GRADING_SERVICE_API, data=data, headers=headers)
     except RequestException:
         log.exception("Grading Service: Error when sending grade.")

@@ -35,8 +35,8 @@ class CourseViewMixin(object):
     Mixin for views dealing with course content. Also handles authorization and authentication.
     """
     lookup_field = 'course_id'
-    authentication_classes = (OAuth2Authentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    #authentication_classes = (OAuth2Authentication, SessionAuthentication,)
+    #permission_classes = (IsAuthenticated,)
 
     def get_course_or_404(self):
         """
