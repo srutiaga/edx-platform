@@ -1,5 +1,6 @@
 import logging
 import json
+import urlparse
 import requests
 from django.conf import settings
 from django.dispatch import receiver
@@ -23,7 +24,7 @@ def score_change_handler(sender, **kwargs):  # pylint: disable=unused-argument
     course_id = kwargs.get('course_id', None)
     usage_id = kwargs.get('usage_id', None)
 
-    if None in (usage_id, course_id, user_id, points_earned, points_possible):
+    if not all((usage_id, course_id, user_id, points_earned, points_possible)):
         log.error(
             "Grading Service: Required signal parameter is None. "
             "points_possible: %s, points_earned: %s, user_id: %s, "
@@ -41,7 +42,7 @@ def score_change_handler(sender, **kwargs):  # pylint: disable=unused-argument
     })
 
     headers = {'content-type': 'application/json'}
-    url = settings.GRADING_APPLICATION_URL
+    url = urlparse.urljoin(settings.GRADING_SERVICE_API, '/scores/')
 
     try:
         requests.post(url, data=grade_info, headers=headers)

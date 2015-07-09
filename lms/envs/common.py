@@ -2540,4 +2540,4 @@ CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 
 ################################ Settings for Grading service ################################
 # Url for third party application to make custom grading algorithms
-GRADING_APPLICATION_URL = 'http://localhost:9000/tracking_log/.json'
+GRADING_SERVICE_API = 'http://127.0.0.1:9000/api/'
