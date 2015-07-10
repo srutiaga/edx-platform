@@ -658,6 +658,10 @@ class CourseBlocksAndNavigation(ListAPIView):
     # A mapping of API-exposed field names to xBlock field names and API field defaults.
     BlockApiField = namedtuple('BlockApiField', 'block_field_name api_field_default')
     FIELD_MAP = {
+        'always_recalculate_grades': BlockApiField(block_field_name='always_recalculate_grades', api_field_default=False),
+        'max_score': BlockApiField(block_field_name='max_score', api_field_default=None),
+        'weight': BlockApiField(block_field_name='weight', api_field_default=None),
+        'has_score': BlockApiField(block_field_name='has_score', api_field_default=False),
         'graded': BlockApiField(block_field_name='graded', api_field_default=False),
         'format': BlockApiField(block_field_name='format', api_field_default=None),
         'responsive_ui': BlockApiField(block_field_name='has_responsive_ui', api_field_default=False),
@@ -669,11 +673,24 @@ class CourseBlocksAndNavigation(ListAPIView):
         """
         for field_name in request_info.fields:
             if field_name in self.FIELD_MAP:
-                block_info.value[field_name] = getattr(
-                    block_info.block,
-                    self.FIELD_MAP[field_name].block_field_name,
-                    self.FIELD_MAP[field_name].api_field_default,
-                )
+                if callable(getattr(block_info.block, self.FIELD_MAP[field_name].block_field_name, None)):
+                    try:
+                        block_info.value[field_name] = getattr(
+                            block_info.block,
+                            self.FIELD_MAP[field_name].block_field_name,
+                        )()
+                    except Exception:
+                        block_info.value[field_name] = getattr(
+                            block_info.block,
+                            self.FIELD_MAP[field_name].block_field_name,
+                            self.FIELD_MAP[field_name].api_field_default,
+                        )
+                else:
+                    block_info.value[field_name] = getattr(
+                        block_info.block,
+                        self.FIELD_MAP[field_name].block_field_name,
+                        self.FIELD_MAP[field_name].api_field_default,
+                    )
 
     def perform_authentication(self, request):
         """

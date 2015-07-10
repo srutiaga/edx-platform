@@ -323,8 +323,8 @@ FEATURES = {
     'ENABLE_MOBILE_SOCIAL_FACEBOOK_FEATURES': False,
 
     # Enable APIs required for xBlocks on Mobile, and supported in general
-    'ENABLE_RENDER_XBLOCK_API': False,
-    'ENABLE_COURSE_BLOCKS_NAVIGATION_API': False,
+    'ENABLE_RENDER_XBLOCK_API': True,
+    'ENABLE_COURSE_BLOCKS_NAVIGATION_API': True,
 
     # Enable the combined login/registration form
     'ENABLE_COMBINED_LOGIN_REGISTRATION': False,
