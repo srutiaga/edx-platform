@@ -354,6 +354,9 @@ if settings.COURSEWARE_ENABLED:
 
         url(r'^courses/{}/progress$'.format(settings.COURSE_ID_PATTERN),
             'courseware.views.progress', name="progress"),
+        url(r'^courses/{}/grading_progress$'.format(settings.COURSE_ID_PATTERN),
+            'grading.views.grading_progress', name="grading_progress"),
+
         # Takes optional student_id for instructor use--shows profile as that student sees it.
         url(r'^courses/{}/progress/(?P<student_id>[^/]*)/$'.format(settings.COURSE_ID_PATTERN),
             'courseware.views.progress', name="student_progress"),

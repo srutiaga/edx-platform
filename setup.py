@@ -37,6 +37,7 @@ setup(
             "textbooks = lms.djangoapps.courseware.tabs:TextbookTabs",
             "wiki = lms.djangoapps.course_wiki.tab:WikiTab",
 
+            "grading_progress = lms.djangoapps.grading.plugins:GradingProgressTab",
             # ORA 1 tabs (deprecated)
             "peer_grading = lms.djangoapps.open_ended_grading.views:PeerGradingTab",
             "staff_grading = lms.djangoapps.open_ended_grading.views:StaffGradingTab",
