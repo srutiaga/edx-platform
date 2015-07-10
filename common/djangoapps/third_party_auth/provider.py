@@ -5,7 +5,7 @@ invoke the Django armature.
 """
 
 from social.backends import google, linkedin, facebook
-from .backends import npoed
+from .backends import npoed, mtest
 
 _DEFAULT_ICON_CLASS = 'fa-signin'
 
@@ -155,6 +155,25 @@ class NpoedProvider(BaseProvider):
     SETTINGS = {
         'SOCIAL_AUTH_NPOED_OAUTH2_KEY': None,
         'SOCIAL_AUTH_NPOED_OAUTH2_SECRET': None,
+    }
+
+    @classmethod
+    def get_email(cls, provider_details):
+        return provider_details.get('email')
+
+    @classmethod
+    def get_name(cls, provider_details):
+        return provider_details.get('fullname')
+
+
+class TestProvider(BaseProvider):
+    """ Provider for Npoed Oauth2 auth system. """
+
+    BACKEND_CLASS = mtest.TestBackend
+    NAME = 'TEST'
+    SETTINGS = {
+        'SOCIAL_AUTH_TEST_OAUTH2_KEY': None,
+        'SOCIAL_AUTH_TEST_OAUTH2_SECRET': None,
     }
 
     @classmethod
