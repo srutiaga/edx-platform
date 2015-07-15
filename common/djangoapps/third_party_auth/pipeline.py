@@ -469,7 +469,6 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
     Ensure that we have the necessary information about a user (either an
     existing account or registration data) to proceed with the pipeline.
     """
-
     # We're deliberately verbose here to make it clear what the intended
     # dispatch behavior is for the various pipeline entry points, given the
     # current state of the pipeline. Keep in mind the pipeline is re-entrant
@@ -487,7 +486,30 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
 
     def dispatch_to_register():
         """Redirects to the registration page."""
-        return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+        #return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+
+        from student.views import create_account_with_params
+        from util.json_request import JsonResponse
+
+        data = kwargs['response']
+        data['terms_of_service'] = True
+        data['honor_code'] = True
+        data['password'] = 'edx'
+        data['name'] = data['username']
+        data['provider'] = backend.name
+
+        if strategy.request.session.get('ExternalAuthMap'):
+            del strategy.request.session['ExternalAuthMap']
+
+        create_account_with_params(strategy.request, data)
+        user = strategy.request.user
+        user.is_active = True
+        user.save()
+
+        response = JsonResponse({"success": True})
+        set_logged_in_cookie(strategy.request, response)
+
+        return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN])
 
     if not user:
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:

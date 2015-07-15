@@ -3,10 +3,10 @@ from social.backends.oauth import BaseOAuth2
 
 
 class TestBackend(BaseOAuth2):
-    name = 'test'
+    name = 'test-oauth2'
     ID_KEY = 'user_id'
-    AUTHORIZATION_URL = 'https://rnoep.raccoongang.com/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://rnoep.raccoongang.com/oauth2/token'
+    AUTHORIZATION_URL = 'http://sso.rnoep.raccoongang.com/oauth2/authorize'
+    ACCESS_TOKEN_URL = 'http://sso.rnoep.raccoongang.com/oauth2/access_token'
     DEFAULT_SCOPE = []
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
@@ -25,16 +25,9 @@ class TestBackend(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """ Grab user profile information from MIPT. """
-        userinfo = self.get_json('https://rnoep.raccoongang.com/api/user/v1/preferences/admin/',
+        userinfo = self.get_json('http://sso.rnoep.raccoongang.com/oauth2/access_token/%s/' % access_token,
                                  params={'access_token': access_token})
-        email = userinfo['email']
-        return {
-            'user_id': userinfo['id'],
-            'username': email.split('@', 1)[0],
-            'email': email,
-            'firstname': userinfo['name'],
-            'lastname': userinfo['surname'],
-        }
+        return userinfo
 
     def do_auth(self, access_token, *args, **kwargs):
         """Finish the auth process once the access_token was retrieved"""
