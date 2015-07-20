@@ -501,7 +501,29 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
 
     def dispatch_to_register():
         """Redirects to the registration page."""
-        return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+        #return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+        from student.views import create_account_with_params
+        from util.json_request import JsonResponse
+
+        data = kwargs['response']
+        data['terms_of_service'] = True
+        data['honor_code'] = True
+        data['password'] = 'edx'
+        data['name'] = kwargs['details']['fullname']
+        data['provider'] = backend.name
+
+        if strategy.request.session.get('ExternalAuthMap'):
+            del strategy.request.session['ExternalAuthMap']
+
+        create_account_with_params(strategy.request, data)
+        user = strategy.request.user
+        user.is_active = True
+        user.save()
+
+        response = JsonResponse({"success": True})
+        set_logged_in_cookie(strategy.request, response)
+
+        return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN])
 
     def should_force_account_creation():
         """ For some third party providers, we auto-create user accounts """
