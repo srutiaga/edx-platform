@@ -37,8 +37,8 @@ class NpoedBackend(BaseOAuth2):
         kwargs.update({'response': data, 'backend': self})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def get_key_and_secret(self):
-        return (
-            settings.SOCIAL_AUTH_TEST_OAUTH2_KEY,
-            settings.SOCIAL_AUTH_TEST_OAUTH2_SECRET,
-        )
+    # def get_key_and_secret(self):
+    #     return (
+    #         settings.SOCIAL_AUTH_TEST_OAUTH2_KEY,
+    #         settings.SOCIAL_AUTH_TEST_OAUTH2_SECRET,
+    #     )
