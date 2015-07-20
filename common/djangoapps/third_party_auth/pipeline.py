@@ -502,6 +502,7 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
     def dispatch_to_register():
         """Redirects to the registration page."""
         #return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+        from student.cookies import set_logged_in_cookies
         from student.views import create_account_with_params
         from util.json_request import JsonResponse
 
@@ -521,7 +522,7 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         user.save()
 
         response = JsonResponse({"success": True})
-        set_logged_in_cookie(strategy.request, response)
+        set_logged_in_cookies(strategy.request, response)
 
         return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN])
 
@@ -536,9 +537,9 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         elif auth_entry in [AUTH_ENTRY_LOGIN, AUTH_ENTRY_LOGIN_2]:
             # User has authenticated with the third party provider but we don't know which edX
             # account corresponds to them yet, if any.
-            if should_force_account_creation():
-                return dispatch_to_register()
-            return dispatch_to_login()
+            # if should_force_account_creation():
+            return dispatch_to_register()
+            # return dispatch_to_login()
         elif auth_entry in [AUTH_ENTRY_REGISTER, AUTH_ENTRY_REGISTER_2]:
             # User has authenticated with the third party provider and now wants to finish
             # creating their edX account.
