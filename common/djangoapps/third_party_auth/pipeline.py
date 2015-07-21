@@ -595,6 +595,7 @@ def ensure_user_information2(strategy, auth_entry, backend=None, user=None, soci
         data['terms_of_service'] = True
         data['honor_code'] = True
         data['password'] = 'edx'
+        data['name'] = ' '.join([data['firstname'], data['lasttname']])
         data['provider'] = backend.name
 
         if strategy.request.session.get('ExternalAuthMap'):
@@ -619,9 +620,9 @@ def ensure_user_information2(strategy, auth_entry, backend=None, user=None, soci
         elif auth_entry in [AUTH_ENTRY_LOGIN, AUTH_ENTRY_LOGIN_2]:
             # User has authenticated with the third party provider but we don't know which edX
             # account corresponds to them yet, if any.
-            if should_force_account_creation():
-                return dispatch_to_register()
-            return dispatch_to_login()
+            #if should_force_account_creation():
+            return dispatch_to_register()
+            #return dispatch_to_login()
         elif auth_entry in [AUTH_ENTRY_REGISTER, AUTH_ENTRY_REGISTER_2]:
             # User has authenticated with the third party provider and now wants to finish
             # creating their edX account.
