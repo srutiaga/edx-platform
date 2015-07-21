@@ -40,6 +40,8 @@ class NpoedBackend(BaseOAuth2):
         if session.get('ExternalAuthMap'):
             del session['ExternalAuthMap']
 
+        log.info(str(request.user) + "#" * 80)
+
         create_account_with_params(request, data)
         user = request.user
         if not user.is_active:
