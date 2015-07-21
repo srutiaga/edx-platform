@@ -20,16 +20,33 @@ class NpoedBackend(BaseOAuth2):
         """ Return user details from MIPT account. """
 
         log.info(str(response) + "-" * 80)
+        log.info(str(dir(self)) + "-" * 80)
 
-        email = response.get('email', '')
-        firstname = response.get('firstname', '')
-        lastname = response.get('lastname', '')
-        fullname = ' '.join([firstname, lastname])
-        return {'username': email.split('@', 1)[0],
-                'email': email,
-                'fullname': fullname,
-                'first_name': firstname,
-                'last_name': lastname}
+        from student.cookies import set_logged_in_cookies
+        from student.views import create_account_with_params
+        from util.json_request import JsonResponse
+
+        data = response
+        data['terms_of_service'] = True
+        data['honor_code'] = True
+        data['password'] = 'edx'
+        data['name'] = ' '.join([firstname, lastname])
+        # data['fullname'] = ' '.join([firstname, lastname])
+        data['provider'] = self.name
+        session = self.strategy.request.session
+        if session.get('ExternalAuthMap'):
+            del session['ExternalAuthMap']
+
+        create_account_with_params(strategy.request, data)
+        user = strategy.request.user
+        if not user.is_active:
+            user.is_active = True
+            user.save()
+
+        response = JsonResponse({"success": True})
+        set_logged_in_cookies(self.strategy.request, response)
+
+        return data
 
     def user_data(self, access_token, *args, **kwargs):
         """ Grab user profile information from MIPT. """
