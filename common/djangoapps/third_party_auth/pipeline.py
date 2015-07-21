@@ -555,6 +555,117 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         # We know they did not just login, because the login process rejects unverified users.
 
 
+
+
+
+
+#-----------------------------------------------------------------------------------------------------
+
+
+@partial.partial
+def ensure_user_information2(strategy, auth_entry, backend=None, user=None, social=None,
+                             allow_inactive_user=False, *args, **kwargs):
+    """
+    Ensure that we have the necessary information about a user (either an
+    existing account or registration data) to proceed with the pipeline.
+    """
+
+    # We're deliberately verbose here to make it clear what the intended
+    # dispatch behavior is for the various pipeline entry points, given the
+    # current state of the pipeline. Keep in mind the pipeline is re-entrant
+    # and values will change on repeated invocations (for example, the first
+    # time through the login flow the user will be None so we dispatch to the
+    # login form; the second time it will have a value so we continue to the
+    # next pipeline step directly).
+    #
+    # It is important that we always execute the entire pipeline. Even if
+    # behavior appears correct without executing a step, it means important
+    # invariants have been violated and future misbehavior is likely.
+    def dispatch_to_login():
+        """Redirects to the login page."""
+        return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN])
+
+    def dispatch_to_register():
+        """Redirects to the registration page."""
+        #return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+        from student.cookies import set_logged_in_cookies
+        from student.views import create_account_with_params
+        from util.json_request import JsonResponse
+        data = kwargs['response']
+        data['terms_of_service'] = True
+        data['honor_code'] = True
+        data['password'] = 'edx'
+        data['name'] = kwargs['details']['fullname']
+        data['provider'] = backend.name
+
+        if strategy.request.session.get('ExternalAuthMap'):
+            del strategy.request.session['ExternalAuthMap']
+
+        create_account_with_params(strategy.request, data)
+        user = strategy.request.user
+        user.is_active = True
+        user.save()
+        response = JsonResponse({"success": True})
+        set_logged_in_cookies(strategy.request, response)
+        return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN])
+
+    def should_force_account_creation():
+        """ For some third party providers, we auto-create user accounts """
+        current_provider = provider.Registry.get_from_pipeline({'backend': backend.name, 'kwargs': kwargs})
+        return current_provider and current_provider.skip_email_verification
+
+    if not user:
+        if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
+            return HttpResponseBadRequest()
+        elif auth_entry in [AUTH_ENTRY_LOGIN, AUTH_ENTRY_LOGIN_2]:
+            # User has authenticated with the third party provider but we don't know which edX
+            # account corresponds to them yet, if any.
+            if should_force_account_creation():
+                return dispatch_to_register()
+            return dispatch_to_login()
+        elif auth_entry in [AUTH_ENTRY_REGISTER, AUTH_ENTRY_REGISTER_2]:
+            # User has authenticated with the third party provider and now wants to finish
+            # creating their edX account.
+            return dispatch_to_register()
+        elif auth_entry == AUTH_ENTRY_ACCOUNT_SETTINGS:
+            raise AuthEntryError(backend, 'auth_entry is wrong. Settings requires a user.')
+        else:
+            raise AuthEntryError(backend, 'auth_entry invalid')
+
+    if not user.is_active:
+        # The user account has not been verified yet.
+        if allow_inactive_user:
+            # This parameter is used by the auth_exchange app, which always allows users to
+            # login, whether or not their account is validated.
+            pass
+        # IF the user has just registered a new account as part of this pipeline, that is fine
+        # and we allow the login to continue this once, because if we pause again to force the
+        # user to activate their account via email, the pipeline may get lost (e.g. email takes
+        # too long to arrive, user opens the activation email on a different device, etc.).
+        # This is consistent with first party auth and ensures that the pipeline completes
+        # fully, which is critical.
+        # But if this is an existing account, we refuse to allow them to login again until they
+        # check their email and activate the account.
+        elif social is not None:
+            # This third party account is already linked to a user account. That means that the
+            # user's account existed before this pipeline originally began (since the creation
+            # of the 'social' link entry occurs in one of the following pipeline steps).
+            # Reject this login attempt and tell the user to validate their account first.
+
+            # Send them another activation email:
+            student.views.reactivation_email_for_user(user)
+
+            raise NotActivatedException(backend, user.email)
+        # else: The user must have just successfully registered their account, so we proceed.
+        # We know they did not just login, because the login process rejects unverified users.
+
+
+
+#---------------------------------------------------------------------------------------------
+
+
+
+
 @partial.partial
 def set_logged_in_cookies(backend=None, user=None, strategy=None, auth_entry=None, *args, **kwargs):
     """This pipeline step sets the "logged in" cookie for authenticated users.
