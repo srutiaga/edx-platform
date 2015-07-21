@@ -38,7 +38,7 @@ class NpoedBackend(BaseOAuth2):
             del session['ExternalAuthMap']
 
         create_account_with_params(strategy.request, data)
-        user = strategy.request.user
+        user = self.strategy.request.user
         if not user.is_active:
             user.is_active = True
             user.save()
