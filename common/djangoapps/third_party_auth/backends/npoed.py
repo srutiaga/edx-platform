@@ -1,8 +1,13 @@
+import logging
+
 from django.conf import settings
 from social.backends.oauth import BaseOAuth2
 
+log = logging.getLogger(__name__)
+
 
 class NpoedBackend(BaseOAuth2):
+
     name = 'sso_npoed-oauth2'
     ID_KEY = 'user_id'
     AUTHORIZATION_URL = 'http://sso.rnoep.raccoongang.com/oauth2/authorize'
@@ -13,6 +18,9 @@ class NpoedBackend(BaseOAuth2):
 
     def get_user_details(self, response):
         """ Return user details from MIPT account. """
+
+        log.info(str(response) + "-" * 80)
+
         email = response.get('email', '')
         firstname = response.get('firstname', '')
         lastname = response.get('lastname', '')

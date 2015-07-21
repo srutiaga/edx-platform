@@ -14,9 +14,6 @@ _FIELDS_STORED_IN_SESSION = ['auth_entry', 'next']
 _MIDDLEWARE_CLASSES = (
     'third_party_auth.middleware.ExceptionMiddleware',
 )
-_AUTHENTICATION_BACKENDS = (
-    'third_party_auth.backends.npoed.NpoedBackend',
-)
 _SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/dashboard'
 
 
@@ -35,8 +32,6 @@ def apply_settings(django_settings):
 
     # Inject exception middleware to make redirects fire.
     django_settings.MIDDLEWARE_CLASSES += _MIDDLEWARE_CLASSES
-
-    django_settings.AUTHENTICATION_BACKENDS += _AUTHENTICATION_BACKENDS
 
     # Where to send the user if there's an error during social authentication
     # and we cannot send them to a more specific URL
