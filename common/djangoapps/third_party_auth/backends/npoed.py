@@ -43,12 +43,12 @@ class NpoedBackend(BaseOAuth2):
 
         log.info(str(request.user) + "#" * 80)
 
-        if User.objects.filter(username=response['username']).exists():
-            create_account_with_params(request, data)
-            user = request.user
-            if not user.is_active:
-                user.is_active = True
-                user.save()
+        # if User.objects.filter(username=response['username']).exists():
+        create_account_with_params(request, data)
+        user = request.user
+        if not user.is_active:
+            user.is_active = True
+            user.save()
 
         set_logged_in_cookies(request, JsonResponse({"success": True}))
         return data
