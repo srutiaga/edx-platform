@@ -53,35 +53,7 @@ class NpoedBackend(BaseOAuth2):
         log.info(str(response) + "-" * 80)
         log.info(str(dir(self)) + "-" * 80)
 
-        from django.contrib.auth.models import User
-        from student.cookies import set_logged_in_cookies
-        from student.views import create_account_with_params
-        from util.json_request import JsonResponse
-
-        request = self.strategy.request
-        session = request.session
-        data = response
-
-        data['terms_of_service'] = True
-        data['honor_code'] = True
-        data['password'] = 'edx'
-        data['name'] = ' '.join([response['firstname'], response['lastname']])
-        data['provider'] = self.name
-
-        if session.get('ExternalAuthMap'):
-            del session['ExternalAuthMap']
-
-        log.info(str(request.user) + "#" * 80)
-
-        # if User.objects.filter(username=response['username']).exists():
-        # create_account_with_params(request, data)
-        # user = request.user
-        # if not user.is_active:
-        #     user.is_active = True
-        #     user.save()
-
-        # set_logged_in_cookies(request, JsonResponse({"success": True}))
-        return data
+        return response
 
     def user_data(self, access_token, *args, **kwargs):
         """ Grab user profile information from MIPT. """
