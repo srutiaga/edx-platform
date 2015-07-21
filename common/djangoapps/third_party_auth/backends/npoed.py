@@ -66,7 +66,6 @@ class NpoedBackend(BaseOAuth2):
         data['honor_code'] = True
         data['password'] = 'edx'
         data['name'] = ' '.join([response['firstname'], response['lastname']])
-        # data['fullname'] = ' '.join([response['firstname'], response['lastname']])
         data['provider'] = self.name
 
         if session.get('ExternalAuthMap'):

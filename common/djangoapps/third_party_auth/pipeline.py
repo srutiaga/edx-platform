@@ -595,7 +595,6 @@ def ensure_user_information2(strategy, auth_entry, backend=None, user=None, soci
         data['terms_of_service'] = True
         data['honor_code'] = True
         data['password'] = 'edx'
-        data['name'] = kwargs['details']['fullname']
         data['provider'] = backend.name
 
         if strategy.request.session.get('ExternalAuthMap'):
