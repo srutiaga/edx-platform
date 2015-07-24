@@ -1294,7 +1294,6 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
 
         return announcement, start, now
 
-
     @lazy
     def grading(self):
         name = settings.GRADING_TYPE
