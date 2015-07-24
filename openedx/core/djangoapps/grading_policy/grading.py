@@ -20,34 +20,7 @@ from submissions import api as sub_api  # installed from the edx-submissions rep
 log = logging.getLogger("openedx.grading_policy")
 
 
-class AbstractGrading(object):
-    """Base interface, that should be used to provide grading logic."""
-    PROGRESS_SUMMARY_TEMPLATE = None
-
-    @staticmethod
-    def grade(student, request, course, keep_raw_scores, field_data_cache, scores_client):
-        """
-        This grades a student as quickly as possible. It returns the
-        output from the course grader, augmented with the final letter
-        grade.
-        """
-        raise NotImplementedError()
-
-    @staticmethod
-    def progress_summary(student, request, course, field_data_cache=None, scores_client=None):
-        """This pulls a summary of all problems in the course."""
-        raise NotImplementedError()
-
-    @staticmethod
-    def grading_context(course):
-        """
-        This returns a dictionary with keys necessary for quickly grading
-        a student.
-        """
-        raise NotImplementedError()
-
-
-class SequentialGrading(AbstractGrading):
+class SequentialGrading(object):
     """Contains the logic to grade courses by sequentials."""
     PROGRESS_SUMMARY_TEMPLATE = '/grading_policy/templates/summary_seq.html'
 

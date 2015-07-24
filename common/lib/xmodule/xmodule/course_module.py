@@ -27,7 +27,6 @@ from django.conf import settings
 from stevedore.extension import ExtensionManager
 
 
-
 log = logging.getLogger(__name__)
 
 # Make '_' a no-op so we can scrape strings
