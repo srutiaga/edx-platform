@@ -2574,4 +2574,4 @@ JWT_ISSUER = None
 
 #################### Settings for Grading Policy app ###########################
 
-GRADING_TYPE = 'sequential'
+GRADING_TYPE = 'vertical'

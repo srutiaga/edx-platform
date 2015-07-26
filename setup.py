@@ -49,6 +49,7 @@ setup(
         ],
         "openedx.grading_policy": [
             "sequential = openedx.core.djangoapps.grading_policy:SequentialGrading",
+            "vertical = openedx.core.djangoapps.grading_policy:VerticalGrading",
         ]
     }
 )
