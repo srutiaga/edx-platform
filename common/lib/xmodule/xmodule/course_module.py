@@ -1296,12 +1296,16 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
 
     @lazy
     def grading(self):
+        """
+        Returns current grading strategy for the course. It is a class that
+        contains static methods needed for the grading.
+        """
         name = settings.GRADING_TYPE
         extension = ExtensionManager(namespace='openedx.grading_policy')
         try:
             return extension[name].plugin
         except KeyError:
-            raise GradingPolicyError("Unrecognized grading strategy `{0}`".format(name))
+            raise GradingPolicyError("Unrecognized grading type `{0}`".format(name))
 
     @lazy
     def grading_context(self):

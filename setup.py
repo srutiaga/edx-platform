@@ -48,7 +48,7 @@ setup(
             "cohort = openedx.core.djangoapps.course_groups.partition_scheme:CohortPartitionScheme",
         ],
         "openedx.grading_policy": [
-            "sequential = openedx.core.djangoapps.grading_policy.grading:SequentialGrading",
+            "sequential = openedx.core.djangoapps.grading_policy:SequentialGrading",
         ]
     }
 )
