@@ -6,19 +6,16 @@ var CourseGrader = Backbone.Model.extend({
         "min_count" : 1,
         "drop_count" : 0,
         "short_label" : "", // what to use in place of type if space is an issue
-        "weight" : 0 // int 0..100
+        "weight" : 0, // int 0..100,
+        "passing_grade": 0 // int 0..100,
     },
     parse : function(attrs) {
         // round off values while converting them to integer
-        if (attrs['weight']) {
-            attrs.weight = Math.round(attrs.weight);
-        }
-        if (attrs['min_count']) {
-            attrs.min_count = Math.round(attrs.min_count);
-        }
-        if (attrs['drop_count']) {
-            attrs.drop_count = Math.round(attrs.drop_count);
-        }
+        _.each(['weight', 'min_count', 'drop_count', 'passing_grade'], function (attrName) {
+            if (_.has(attrs, attrName)) {
+                attrs[attrName] = Math.round(attrs[attrName]);
+            }
+        });
         return attrs;
     },
     validate : function(attrs) {
@@ -44,7 +41,7 @@ var CourseGrader = Backbone.Model.extend({
                 attrs.weight = intWeight;
                 if (this.collection && attrs.weight > 0) {
                     // FIXME b/c saves don't update the models if validation fails, we should
-                    // either revert the field value to the one in the model and make them make room
+                    // either revert the attr value to the one in the model and make them make room
                     // or figure out a holistic way to balance the vals across the whole
 //                  if ((this.collection.sumWeights() + attrs.weight - this.get('weight')) > 100)
 //                  errors.weight = "The weights cannot add to more than 100.";
@@ -64,6 +61,14 @@ var CourseGrader = Backbone.Model.extend({
                 errors.drop_count = gettext("Please enter non-negative integer.");
             }
             else attrs.drop_count = intDropCount;
+        }
+        if (_.has(attrs, 'passing_grade')) {
+            var passingGrade = attrs.passing_grade,
+                intPsGrade = Math.round(passingGrade); // see if this ensures value saved is int
+            if (!isFinite(intPsGrade) || /\D+/.test(passingGrade) || (_.isString(passingGrade) && _.isEmpty(passingGrade.trim())) || intPsGrade < 0 || intPsGrade > 100) {
+                errors.passing_grade = gettext("Please enter an integer between 0 and 100.");
+            }
+            else attrs.passing_grade = intPsGrade;
         }
         if (_.has(attrs, 'min_count') && _.has(attrs, 'drop_count') && !_.has(errors, 'min_count') && !_.has(errors, 'drop_count') && attrs.drop_count > attrs.min_count) {
             errors.drop_count = _.template(
