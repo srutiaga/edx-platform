@@ -571,6 +571,7 @@ class CourseGradingTest(CourseTestCase):
         new_grader = {
             "type": "Extra Credit",
             "min_count": 1,
+            "passing_grade": 20.0,
             "drop_count": 2,
             "short_label": None,
             "weight": 15,
@@ -1076,6 +1077,7 @@ class CourseGraderUpdatesTest(CourseTestCase):
             "id": 0,
             "type": "manual",
             "min_count": 5,
+            "passing_grade": 12.2,
             "drop_count": 10,
             "short_label": "yo momma",
             "weight": 17.3,
@@ -1095,6 +1097,7 @@ class CourseGraderUpdatesTest(CourseTestCase):
         grader = {
             "type": "manual",
             "min_count": 5,
+            "passing_grade": 12.5,
             "drop_count": 10,
             "short_label": "yo momma",
             "weight": 17.3,
