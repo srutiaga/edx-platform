@@ -10,9 +10,15 @@ from xblock.runtime import KvsFieldData, DictKeyValueStore
 
 import xmodule.course_module
 from xmodule.modulestore.xml import ImportSystem, XMLModuleStore
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
+from xmodule.modulestore.django import modulestore
+
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from django.utils.timezone import UTC
+from ddt import ddt, data
 
+from cms.djangoapps.models.settings.course_grading import CourseGradingModel
 
 ORG = 'test_org'
 COURSE = 'test_course'
@@ -398,3 +404,81 @@ class CourseDescriptorTestCase(unittest.TestCase):
         Test CourseDescriptor.number.
         """
         self.assertEqual(self.course.number, COURSE)
+
+
+@ddt
+class PassingGradingTests(ModuleStoreTestCase):
+    """
+    Set to category passing level and try to pass course
+    """
+
+    def setUp(self):
+        super(PassingGradingTests, self).setUp()
+        self.course = CourseFactory.create()
+        self.course_grading = CourseGradingModel(self.course)
+        self.graders = self.course_grading.graders
+
+    def test_fetch_grader_from_not_existing_index(self):
+        """
+        Get default grader from fetch_grader method in CourseGradingModel
+        """
+        index_grader_out_of_course = 9999
+        num_available_indexes = len(modulestore().get_course(self.course.id).raw_grader)
+
+        self.assertLess(num_available_indexes, index_grader_out_of_course)
+
+        expected_value = {"id": 9999,
+                          "type": "",
+                          "min_count": 0,
+                          "drop_count": 0,
+                          "short_label": None,
+                          "weight": 0,
+                          "passing_grade": 0
+                          }
+
+        res = self.course_grading.fetch_grader(self.course.id, index_grader_out_of_course)
+        self.assertEquals(res, expected_value)
+
+    def test_fetch_grader_from_existing_index(self):
+        """
+        Get grader with params from course from fetch_grader method in CourseGradingModel
+        """
+        num_available_indexes = len(modulestore().get_course(self.course.id).raw_grader)
+        index_grader_out_of_course = 1
+
+        self.assertLess(index_grader_out_of_course, num_available_indexes)
+
+        expected_value = {"id": 1,
+                          "type": "Lab",
+                          "min_count": 12,
+                          "drop_count": 2,
+                          "short_label": '',
+                          "weight": 15.0,
+                          "passing_grade": 0
+                          }
+
+        res = self.course_grading.fetch_grader(self.course.id, index_grader_out_of_course)
+        self.assertEquals(res, expected_value)
+
+    @data({'passing_grade': 100.0, 'type': 'Homework'},
+          {'passing_grade': 0, 'type': 'Lab'},
+          {'passing_grade': 1.0, 'type': 'Midterm Exam'},
+          {'passing_grade': 50.0, 'type': 'Final Exam'})
+    def test_parse_grader(self, value):
+        """
+        Test correct rounding in method parse_grader from CourseGradingModel
+        """
+        res = self.course_grading.parse_grader(value)
+        self.assertEqual((value['passing_grade'] / 100), res['passing_grade'])
+
+    @data({'passing_grade': 0.01, 'type': 'Homework'},
+          {'passing_grade': 0, 'type': 'Lab'},
+          {'passing_grade': 1, 'type': 'Midterm Exam'},
+          {'passing_grade': 0.29, 'type': 'Final Exam'})
+    def test_jsonize_grader(self, value):
+        """
+        Test rounding in method jsonize_grader from CourseGradingModel
+        e.g, "0.29 * 100 = 28.999999999999996"
+        """
+        res = self.course_grading.jsonize_grader(1, value)
+        self.assertAlmostEqual(round((value['passing_grade'] * 100)), res['passing_grade'])
