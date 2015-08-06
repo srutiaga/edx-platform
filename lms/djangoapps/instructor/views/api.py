@@ -899,7 +899,6 @@ def get_grading_config(request, course_id):
         request.user, 'staff', course_id, depth=None
     )
     grading_config_summary = instructor_analytics.basic.dump_grading_context(course)
-
     response_payload = {
         'course_id': course_id.to_deprecated_string(),
         'grading_config_summary': grading_config_summary,
