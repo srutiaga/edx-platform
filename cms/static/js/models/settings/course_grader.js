@@ -41,7 +41,7 @@ var CourseGrader = Backbone.Model.extend({
                 attrs.weight = intWeight;
                 if (this.collection && attrs.weight > 0) {
                     // FIXME b/c saves don't update the models if validation fails, we should
-                    // either revert the attr value to the one in the model and make them make room
+                    // either revert the field value to the one in the model and make them make room
                     // or figure out a holistic way to balance the vals across the whole
 //                  if ((this.collection.sumWeights() + attrs.weight - this.get('weight')) > 100)
 //                  errors.weight = "The weights cannot add to more than 100.";
