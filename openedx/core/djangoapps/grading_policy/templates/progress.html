@@ -97,7 +97,9 @@ from django.utils.http import urlquote_plus
 
       %if not course.disable_progress_graph:
         <div class="grade-detail-graph" id="grade-detail-graph" aria-hidden="true"></div>
-        ${progress_table.body(grade_summary)}
+        %if not course.no_grade:
+          ${progress_table.body(grade_summary)}
+        %endif
       %endif
 
       % if credit_course_requirements:

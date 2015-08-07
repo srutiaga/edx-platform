@@ -6,16 +6,16 @@ from django.utils.translation import ugettext as _
   <table class="grade-category-detail-table">
     <thead>
       <tr>
-        <th>${'Category'}</th>
+        <th scope="row">${'Category'}</th>
       %for section in grade_summary['grade_breakdown']:
-        <td>${section['category']}</td>
+        <td scope="col">${section['category']}</td>
       %endfor
-        <td>${'Total'}</td>
+        <td scope="col">${'Total'}</td>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <th>${'Status'}</th>
+        <th scope="row">${'Status'}</th>
       %for section in grade_summary['grade_breakdown']:
         %if section['pass']:
           <td class="pass">${_('Pass')}</td>
