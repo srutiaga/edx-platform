@@ -1,0 +1,34 @@
+<%page args="grade_summary, **kwargs"/>
+<%!
+from django.utils.translation import ugettext as _
+%>
+<div class="grade-category-detail">
+  <table class="grade-category-detail-table">
+    <thead>
+      <tr>
+        <th>${'Category'}</th>
+      %for section in grade_summary['grade_breakdown']:
+        <td>${section['category']}</td>
+      %endfor
+        <td>${'Total'}</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>${'Status'}</th>
+      %for section in grade_summary['grade_breakdown']:
+        %if section['pass']:
+          <td class="pass">${_('Pass')}</td>
+        %else:
+          <td class="fail">${_('Fail')}</td>
+        %endif
+      %endfor
+      %if grade_summary['pass']:
+        <td class="pass">${grade_summary['grade']}</td>
+      %else:
+        <td class="fail">${_('Fail')}</td>
+      %endif
+      </tr>
+    </tbody>
+  </table>
+</div>
