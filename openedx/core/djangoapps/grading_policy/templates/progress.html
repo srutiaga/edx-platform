@@ -98,6 +98,35 @@ from django.utils.http import urlquote_plus
         <div class="grade-detail-graph" id="grade-detail-graph" aria-hidden="true"></div>
       %endif
 
+      <div class="grade-category-detail">
+        <table class="grade-category-detail-table">
+          <thead>
+            <tr>
+            %for section in grade_summary['grade_breakdown']:
+              <th>${section['category']}</th>
+            %endfor
+              <th>${'Total'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+            %for section in grade_summary['grade_breakdown']:
+              %if section['pass']:
+                <td class="pass">${_('Pass')}</td>
+              %else:
+                <td class="fail">${_('Fail')}</td>
+              %endif
+            %endfor
+            %if grade_summary['pass']:
+              <td class="pass">${grade_summary['grade']}</td>
+            %else:
+              <td class="fail">${_('Fail')}</td>
+            %endif
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       % if credit_course_requirements:
         <section class="credit-eligibility">
             <div class="credit-eligibility-container">
