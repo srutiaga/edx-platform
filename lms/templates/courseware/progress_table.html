@@ -1,6 +1,6 @@
 <%page args="grade_summary, **kwargs"/>
 <%!
-from django.utils.translation import ugettext as _
+  from django.utils.translation import ugettext as _
 %>
 <div class="grade-category-detail">
   <table class="grade-category-detail-table">
@@ -20,13 +20,13 @@ from django.utils.translation import ugettext as _
         %if section['pass']:
           <td class="pass">${_('Pass')}</td>
         %else:
-          <td class="fail">${_('Fail')}</td>
+          <td class="fail">${_('Not passed')}</td>
         %endif
       %endfor
       %if grade_summary['pass']:
-        <td class="pass">${grade_summary['grade']}</td>
+        <td class="pass">${_('Pass')}</td>
       %else:
-        <td class="fail">${_('Fail')}</td>
+        <td class="fail">${_('Not passed')}</td>
       %endif
       </tr>
     </tbody>
