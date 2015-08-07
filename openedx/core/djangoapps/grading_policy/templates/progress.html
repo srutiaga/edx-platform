@@ -16,6 +16,7 @@ from django.utils.http import urlquote_plus
 
 
 <%namespace name="progress_graph" file="/courseware/progress_graph.js"/>
+<%namespace name="progress_table" file="/courseware/progress_table.html"/>
 
 <%block name="pagetitle">${_("{course_number} Progress").format(course_number=course.display_number_with_default) | h}</%block>
 <%block name="nav_skip">#course-info-progress</%block>
@@ -96,36 +97,8 @@ from django.utils.http import urlquote_plus
 
       %if not course.disable_progress_graph:
         <div class="grade-detail-graph" id="grade-detail-graph" aria-hidden="true"></div>
+        ${progress_table.body(grade_summary)}
       %endif
-
-      <div class="grade-category-detail">
-        <table class="grade-category-detail-table">
-          <thead>
-            <tr>
-            %for section in grade_summary['grade_breakdown']:
-              <th>${section['category']}</th>
-            %endfor
-              <th>${'Total'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-            %for section in grade_summary['grade_breakdown']:
-              %if section['pass']:
-                <td class="pass">${_('Pass')}</td>
-              %else:
-                <td class="fail">${_('Fail')}</td>
-              %endif
-            %endfor
-            %if grade_summary['pass']:
-              <td class="pass">${grade_summary['grade']}</td>
-            %else:
-              <td class="fail">${_('Fail')}</td>
-            %endif
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
       % if credit_course_requirements:
         <section class="credit-eligibility">
