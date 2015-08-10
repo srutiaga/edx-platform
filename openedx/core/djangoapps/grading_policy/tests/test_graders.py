@@ -108,29 +108,29 @@ class GraderTest(unittest.TestCase):
         midterm_grader = AssignmentFormatGrader("Midterm", 1, 0)
 
         weighted_grader = WeightedSubsectionsGrader([
-            (homework_grader, homework_grader.category, 0.25),
-            (lab_grader, lab_grader.category, 0.25),
-            (midterm_grader, midterm_grader.category, 0.5)
+            (homework_grader, homework_grader.category, 0.25, 0.0),
+            (lab_grader, lab_grader.category, 0.25, 0.0),
+            (midterm_grader, midterm_grader.category, 0.5, 0.0)
         ])
 
         over_one_weights_grader = WeightedSubsectionsGrader([
-            (homework_grader, homework_grader.category, 0.5),
-            (lab_grader, lab_grader.category, 0.5),
-            (midterm_grader, midterm_grader.category, 0.5)
+            (homework_grader, homework_grader.category, 0.5, 0.0),
+            (lab_grader, lab_grader.category, 0.5, 0.0),
+            (midterm_grader, midterm_grader.category, 0.5, 0.0)
         ])
 
         # The midterm should have all weight on this one
         zero_weights_grader = WeightedSubsectionsGrader([
-            (homework_grader, homework_grader.category, 0.0),
-            (lab_grader, lab_grader.category, 0.0),
-            (midterm_grader, midterm_grader.category, 0.5)
+            (homework_grader, homework_grader.category, 0.0, 0.0),
+            (lab_grader, lab_grader.category, 0.0, 0.0),
+            (midterm_grader, midterm_grader.category, 0.5, 0.0)
         ])
 
         # This should always have a final percent of zero
         all_zero_weights_grader = WeightedSubsectionsGrader([
-            (homework_grader, homework_grader.category, 0.0),
-            (lab_grader, lab_grader.category, 0.0),
-            (midterm_grader, midterm_grader.category, 0.0)
+            (homework_grader, homework_grader.category, 0.0, 0.0),
+            (lab_grader, lab_grader.category, 0.0, 0.0),
+            (midterm_grader, midterm_grader.category, 0.0, 0.0)
         ])
 
         empty_grader = WeightedSubsectionsGrader([])
