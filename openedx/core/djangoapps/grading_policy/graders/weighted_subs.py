@@ -49,5 +49,6 @@ class WeightedSubsectionsGrader(CourseGrader):
         return {
             'percent': total_percent,
             'section_breakdown': section_breakdown,
-            'grade_breakdown': grade_breakdown
+            'grade_breakdown': grade_breakdown,
+            'pass': all(section['pass'] for section in grade_breakdown)
         }
