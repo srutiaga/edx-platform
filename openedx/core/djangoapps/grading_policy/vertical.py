@@ -215,7 +215,6 @@ class VerticalGrading(object):
 
         letter_grade = grade_for_percentage(course.grade_cutoffs, grade_summary['percent'])
         grade_summary['grade'] = letter_grade
-        grade_summary['pass'] = all(x['pass'] for x in grade_summary['grade_breakdown'])
         grade_summary['totaled_scores'] = totaled_scores   # make this available, eg for instructor download & debugging
         if keep_raw_scores:
             # way to get all RAW scores out to instructor
