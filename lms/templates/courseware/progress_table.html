@@ -18,13 +18,13 @@
         <th scope="row">${'Status'}</th>
       %for section in grade_summary['grade_breakdown']:
         %if section['pass']:
-          <td class="pass">${_('Pass')}</td>
+          <td class="pass">${_('Passed')}</td>
         %else:
           <td class="fail">${_('Not passed')}</td>
         %endif
       %endfor
       %if grade_summary['pass']:
-        <td class="pass">${_('Pass')}</td>
+        <td class="pass">${_('Passed')}</td>
       %else:
         <td class="fail">${_('Not passed')}</td>
       %endif
