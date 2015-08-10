@@ -817,7 +817,7 @@ class ProgressPageTests(ModuleStoreTestCase):
 
     @patch.dict('django.conf.settings.FEATURES', {'CERTIFICATES_HTML_VIEW': True})
     @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75, 'section_breakdown': [],
-                                                         'grade_breakdown': []}))
+                                                         'grade_breakdown': [], 'pass': True}))
     def test_view_certificate_link(self):
         """
         If certificate web view is enabled then certificate web view button should appear for user who certificate is
@@ -877,7 +877,7 @@ class ProgressPageTests(ModuleStoreTestCase):
 
     @patch.dict('django.conf.settings.FEATURES', {'CERTIFICATES_HTML_VIEW': False})
     @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75, 'section_breakdown': [],
-                                                         'grade_breakdown': []}))
+                                                         'grade_breakdown': [], 'pass': True}))
     def test_view_certificate_link_hidden(self):
         """
         If certificate web view is disabled then certificate web view button should not appear for user who certificate
