@@ -1,6 +1,7 @@
 """
 Student progress page
 """
+from bok_choy.page_object import PageObject
 from .course_page import CoursePage
 
 
@@ -21,6 +22,20 @@ class ProgressPage(CoursePage):
     @property
     def grading_formats(self):
         return [label.replace(' Scores:', '') for label in self.q(css="div.scores h4").text]
+
+    @property
+    def has_passing_information_table(self):
+        """
+        Indicates whether progress page has a PassingInformationTable.
+        """
+        return PassingInformationTable.is_present(self)
+
+    @property
+    def passing_information_table(self):
+        """
+        Returns PassingInformationTable instance.
+        """
+        return PassingInformationTable(self.browser)
 
     def scores(self, chapter, section):
         """
@@ -104,3 +119,43 @@ class ProgressPage(CoursePage):
 
         # Convert text scores to tuples of (points, max_points)
         return [tuple(map(int, score.split('/'))) for score in text_scores]
+
+
+class PassingInformationTable(PageObject):
+    """
+    PassingInformationTable page object wrapper
+    """
+    url = None
+    TABLE_SELECTOR = '.grade-category-detail-table'
+
+    def __init__(self, browser):
+        super(PassingInformationTable, self).__init__(browser)
+
+    def find_css(self, selector):
+        """
+        Returns a query corresponding to the given CSS selector within the scope
+        of this discussion page
+        """
+        return self.q(css=self.TABLE_SELECTOR + " " + selector)
+
+    def is_browser_on_page(self):
+        """
+        Verify that the browser is on the page and it is not still loading.
+        """
+        return PassingInformationTable.is_present(self)
+
+    @classmethod
+    def is_present(cls, page):
+        """
+        Indicates whether progress page has a PassingInformationTable.
+        """
+        return page.q(css=cls.TABLE_SELECTOR).present
+
+    @property
+    def status(self):
+        """
+        Returns current statuses for the categories.
+        """
+        names = self.find_css('thead td').text
+        values = self.find_css('tbody td').text
+        return zip(names, values)
