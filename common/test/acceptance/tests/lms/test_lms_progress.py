@@ -3,7 +3,7 @@
 End-to-end tests for the LMS.
 """
 from textwrap import dedent
-from ..helpers import UniqueCourseTest, load_data_str
+from ..helpers import UniqueCourseTest
 from ...pages.studio.auto_auth import AutoAuthPage
 from ...pages.lms.progress import ProgressPage
 from ...pages.lms.problem import ProblemPage
@@ -15,7 +15,7 @@ from ...fixtures.grading import GradingConfigFixture
 
 class ProgressTest(UniqueCourseTest):
     """
-    Test courseware with multiple verticals
+    Test progress page
     """
     USERNAME = "STUDENT_TESTER"
     EMAIL = "student101@example.com"
@@ -23,13 +23,13 @@ class ProgressTest(UniqueCourseTest):
     def setUp(self):
         super(ProgressTest, self).setUp()
 
-        self.progress_page = ProgressPage(self.browser, self.course_id)
-
-        # Install a course with sections/problems, tabs, updates, and handouts
         course_fix = CourseFixture(
             self.course_info['org'], self.course_info['number'],
             self.course_info['run'], self.course_info['display_name']
         )
+        self.progress_page = ProgressPage(self.browser, self.course_id)
+        self.courseware = CoursewarePage(self.browser, self.course_id)
+        self.course_nav = CourseNavPage(self.browser)
 
         problem = dedent("""
             <problem markdown="null">
@@ -50,17 +50,17 @@ class ProgressTest(UniqueCourseTest):
             XBlockFixtureDesc('chapter', 'Test Section 1').add_children(
                 XBlockFixtureDesc('sequential', 'Test Subsection 1').add_children(
                     XBlockFixtureDesc(
-                        'vertical', 'Test Vertical 1', metadata={'graded': True, 'format': 'Homework', 'weight': 0.5}
+                        'vertical', 'Test Vertical 1', metadata={'graded': True, 'format': 'Homework'}
                     ).add_children(XBlockFixtureDesc('problem', 'Test Problem 1', data=problem)),
                 ),
                 XBlockFixtureDesc('sequential', 'Test Subsection 2').add_children(
                     XBlockFixtureDesc(
-                        'vertical', 'Test Vertical 2', metadata={'graded': True, 'format': 'Homework', 'weight': 0.5}
+                        'vertical', 'Test Vertical 2', metadata={'graded': True, 'format': 'Homework'}
                     ).add_children(XBlockFixtureDesc('problem', 'Test Problem 3', data=problem)),
                 ),
                 XBlockFixtureDesc('sequential', 'Test Subsection 3').add_children(
                     XBlockFixtureDesc(
-                        'vertical', 'Test Vertical 3', metadata={'graded': True, 'format': 'Exam', 'weight': 1}
+                        'vertical', 'Test Vertical 3', metadata={'graded': True, 'format': 'Exam'}
                     ).add_children(XBlockFixtureDesc('problem', 'Test Problem 3', data=problem)),
                 ),
             ),
@@ -70,68 +70,93 @@ class ProgressTest(UniqueCourseTest):
         AutoAuthPage(self.browser, username=self.USERNAME, email=self.EMAIL,
                      course_id=self.course_id, staff=False).visit()
 
-        self.courseware = CoursewarePage(self.browser, self.course_id)
-        self.course_nav = CourseNavPage(self.browser)
-
-    def test_passing_grade_table(self):
+    def check_problem(self, section, subsection, answer):
         """
-        1) Not passed -> no table
-        2) pass 1 < passing_grade -> see table
-        3) pass all -> no table
+        Opens the courseware page with a problem and passes it.
         """
-        GradingConfigFixture(self.course_id, {
-            'graders': [
-                {
-                    'type': 'Homework', 'passing_grade': 70, 'weight': 50,
-                    'min_count': 0, 'drop_count': 0, 'short_label': 'HW'
-                },
-                {
-                    'type': 'Exam', 'passing_grade': 20, 'weight': 50,
-                    'min_count': 0, 'drop_count': 0, 'short_label': 'EX'
-                },
-            ]
-        }).install()
+        self.courseware.visit()
+        self.course_nav.go_to_section(section, subsection)
+        problem_page = ProblemPage(self.browser)
+        problem_page.fill_answer(answer)
+        problem_page.click_check()
+        self.assertTrue(problem_page.is_correct())
 
+    def set_assignments(self, assignments):
+        """
+        Configures assignment types for the course.
+        """
+        GradingConfigFixture(self.course_id, {'graders': assignments}).install()
+
+    def test_passing_info_table_is_hidden_when_all_passing_grades_equal_zero(self):
+        """
+        Ensures that the passing information table is hiiden when all passing grades equal 0.
+        """
+        self.set_assignments([
+            {
+                'type': 'Homework', 'passing_grade': 0, 'weight': 50,
+                'min_count': 2, 'drop_count': 0, 'short_label': 'HW'
+            },
+            {
+                'type': 'Exam', 'passing_grade': 0, 'weight': 50,
+                'min_count': 1, 'drop_count': 0, 'short_label': 'EX'
+            },
+        ])
+
+        self.progress_page.visit()
+        self.assertFalse(self.progress_page.has_passing_information_table)
+
+    def test_passing_info_table_is_visible(self):
+        """
+        Ensures that the passing information table is visible when at least one passing grade
+        is greater than 0.
+        """
+        self.set_assignments([
+            {
+                'type': 'Homework', 'passing_grade': 70, 'weight': 50,
+                'min_count': 2, 'drop_count': 0, 'short_label': 'HW'
+            },
+            {
+                'type': 'Exam', 'passing_grade': 0, 'weight': 50,
+                'min_count': 1, 'drop_count': 0, 'short_label': 'EX'
+            },
+        ])
+
+        self.progress_page.visit()
+        self.assertTrue(self.progress_page.has_passing_information_table)
+
+    def test_passing_info_table_disappers(self):
+        """
+        Scenario: Ensures that the passing information table has correct values and
+            disappears when all the categories are passed
+        Given I have a course with 2 categories ("Homework", "Exam")
+        And "Homework" has passing grade "70" and contains 2 problems
+        And "Exam" has passing grade "0" and contains 1 problem
+        When I pass the 1st Homework's problem (current grade for the category is 50)
+        And I go to the Progress page
+        Then I see that all categories are not possed in the passing information table
+        When I pass the 2nd Homework's problem (current grade for the category is 100)
+        And I go to the Progress page
+        Then I do not see the passing information table
+        """
+        self.set_assignments([
+            {
+                'type': 'Homework', 'passing_grade': 70, 'weight': 50,
+                'min_count': 2, 'drop_count': 0, 'short_label': 'HW'
+            },
+            {
+                'type': 'Exam', 'passing_grade': 0, 'weight': 50,
+                'min_count': 1, 'drop_count': 0, 'short_label': 'EX'
+            },
+        ])
+
+        self.check_problem('Test Section 1', 'Test Subsection 1', answer='6.5')
         self.progress_page.visit()
         self.assertTrue(self.progress_page.has_passing_information_table)
         self.assertEqual(
             self.progress_page.passing_information_table.status,
-            [('Homework', 'Not passed'), ('Exam', 'Not passed'), ('Total', 'Not passed')]
+            [('Homework', 'Not passed'), ('Exam', 'Passed'), ('Total', 'Not passed')]
         )
 
-        self.courseware.visit()
-        self.course_nav.go_to_section('Test Section 1', 'Test Subsection 1')
-        problem_page = ProblemPage(self.browser)
-        self.assertEqual(problem_page.problem_name, 'TEST PROBLEM 1')
-        problem_page.fill_answer("6.5")
-        problem_page.click_check()
-        self.assertTrue(problem_page.is_correct())
-
-        self.progress_page.visit()
-        self.assertTrue(self.progress_page.has_passing_information_table)
-        self.assertEqual(
-            self.progress_page.passing_information_table.status,
-            [('Homework', 'Not passed'), ('Exam', 'Not passed'), ('Total', 'Not passed')]
-        )
-
-        self.courseware.visit()
-        self.course_nav.go_to_section('Test Section 1', 'Test Subsection 2')
-        problem_page = ProblemPage(self.browser)
-        problem_page.fill_answer("6.5")
-        problem_page.click_check()
-        self.assertTrue(problem_page.is_correct())
-        self.progress_page.visit()
-        self.assertTrue(self.progress_page.has_passing_information_table)
-        self.assertEqual(
-            self.progress_page.passing_information_table.status,
-            [('Homework', 'Passed'), ('Exam', 'Not passed'), ('Total', 'Not passed')]
-        )
-
-        self.courseware.visit()
-        self.course_nav.go_to_section('Test Section 1', 'Test Subsection 3')
-        problem_page = ProblemPage(self.browser)
-        problem_page.fill_answer("6.5")
-        problem_page.click_check()
-        self.assertTrue(problem_page.is_correct())
+        self.check_problem('Test Section 1', 'Test Subsection 2', answer='6.5')
         self.progress_page.visit()
         self.assertFalse(self.progress_page.has_passing_information_table)
