@@ -108,7 +108,7 @@ class ProgressTest(UniqueCourseTest):
     def test_passing_info_table_is_visible(self):
         """
         Ensures that the passing information table is visible when at least one passing grade
-        is greater than 0.
+        is greater than 0 and it does not dispaly Assignments with 0 passing grade.
         """
         self.set_assignments([
             {
@@ -123,6 +123,10 @@ class ProgressTest(UniqueCourseTest):
 
         self.progress_page.visit()
         self.assertTrue(self.progress_page.has_passing_information_table)
+        self.assertEqual(
+            self.progress_page.passing_information_table.status,
+            [('Homework', '70', '0', 'Not pass')]
+        )
 
     def test_passing_info_table_disappers(self):
         """
@@ -154,7 +158,7 @@ class ProgressTest(UniqueCourseTest):
         self.assertTrue(self.progress_page.has_passing_information_table)
         self.assertEqual(
             self.progress_page.passing_information_table.status,
-            [('Homework', 'Not passed'), ('Exam', 'Passed'), ('Total', 'Not passed')]
+            [('Homework', '70', '50', 'Not pass')]
         )
 
         self.check_problem('Test Section 1', 'Test Subsection 2', answer='6.5')
