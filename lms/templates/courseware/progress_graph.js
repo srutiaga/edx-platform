@@ -91,8 +91,8 @@ $(function () {
 
     totalLabel = _("Total")
     if not grade_summary['pass']:
-      totalLabel += "<br><span style=\"color: #b60000;\">({status})</span>" .format(
-        status = _('not passed')
+      totalLabel += "<br><span style=\"color: #b60000;white-space: nowrap;\">({status})</span>" .format(
+        status = _('not pass')
       )
     ticks += [ [overviewBarX,  totalLabel] ]
     tickIndex += 1 + sectionSpacer
