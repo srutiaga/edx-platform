@@ -45,12 +45,12 @@ class WeightedSubsectionsGrader(CourseGrader):
                 'percent': weighted_percent,
                 'detail': section_detail,
                 'category': category,
-                'pass': subgrade_result['percent'] >= passing_grade
+                'is_passed': subgrade_result['percent'] >= passing_grade
             })
 
         return {
             'percent': total_percent,
             'section_breakdown': section_breakdown,
             'grade_breakdown': grade_breakdown,
-            'pass': all(section['pass'] for section in grade_breakdown)
+            'sections_passed': all(section['is_passed'] for section in grade_breakdown)
         }

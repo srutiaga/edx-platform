@@ -90,7 +90,7 @@ $(function () {
             detail_tooltips[section['category'] + "-grade_breakdown"] = [ section['detail'] ]
 
     totalLabel = _("Total")
-    if not grade_summary['pass']:
+    if not grade_summary['sections_passed']:
       totalLabel += "<br><span style=\"color: #b60000;white-space: nowrap;\">({status})</span>" .format(
         status = _('not pass')
       )
@@ -112,7 +112,7 @@ $(function () {
     for grade in descending_grades:
         percent = grade_cutoffs[grade]
         grade_cutoff_ticks.append( [ percent, u"{0} {1:.0%}".format(grade, percent) ] )
-        if not grade_summary['pass']:
+        if not grade_summary['sections_passed']:
           grading_issues.append([0.25, percent])
           grading_issues_tooltips.append(_('One of the categories is not passed'))
   else:

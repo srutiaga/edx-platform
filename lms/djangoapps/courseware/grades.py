@@ -412,7 +412,7 @@ def _grade(student, request, course, keep_raw_scores, field_data_cache, scores_c
     # doesn't get displayed differently than it gets grades
     grade_summary['percent'] = round(grade_summary['percent'] * 100 + 0.05) / 100
 
-    letter_grade = grade_for_percentage(course.grade_cutoffs, grade_summary['percent'])
+    letter_grade = grade_for_percentage(course.grade_cutoffs, grade_summary['percent'], grade_summary['sections_passed'])
     grade_summary['grade'] = letter_grade
     grade_summary['totaled_scores'] = totaled_scores   # make this available, eg for instructor download & debugging
     if keep_raw_scores:
@@ -425,7 +425,7 @@ def _grade(student, request, course, keep_raw_scores, field_data_cache, scores_c
     return grade_summary
 
 
-def grade_for_percentage(grade_cutoffs, percentage):
+def grade_for_percentage(grade_cutoffs, percentage, is_course_passed=True):
     """
     Returns a letter grade as defined in grading_policy (e.g. 'A' 'B' 'C' for 6.002x) or None.
 
@@ -436,6 +436,9 @@ def grade_for_percentage(grade_cutoffs, percentage):
     """
 
     letter_grade = None
+
+    if not is_course_passed:
+        return letter_grade
 
     # Possible grades, sorted in descending order of score
     descending_grades = sorted(grade_cutoffs, key=lambda x: grade_cutoffs[x], reverse=True)

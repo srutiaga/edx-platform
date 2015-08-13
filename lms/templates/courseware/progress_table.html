@@ -27,7 +27,7 @@
           <td scope="row">${category}</td>
           <td>${"{0:.0f}".format( 100 * passing_grade)}</td>
           <td>${"{0:.0f}".format( 100 * current_grades.get(category, 0))}</td>
-          %if section['pass']:
+          %if section['is_passed']:
             <td class="pass">${_('Pass')}</td>
           %else:
             <td class="fail">${_('Not pass')}</td>
