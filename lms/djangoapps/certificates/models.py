@@ -201,7 +201,7 @@ def certificate_status_for_student(student, course_id):
     return {'status': CertificateStatuses.unavailable, 'mode': GeneratedCertificate.MODES.honor}
 
 
-def certificate_info_for_user(user, course_id, grade, user_is_whitelisted=None):
+def certificate_info_for_user(user, course_id, grade, passing_grade, user_is_whitelisted=None):
     """
     Returns the certificate info for a user for grade report.
     """
@@ -210,7 +210,7 @@ def certificate_info_for_user(user, course_id, grade, user_is_whitelisted=None):
             user=user, course_id=course_id, whitelist=True
         ).exists()
 
-    eligible_for_certificate = (user_is_whitelisted or grade is not None) and user.profile.allow_certificate
+    eligible_for_certificate = (user_is_whitelisted or grade is not None) and user.profile.allow_certificate and passing_grade
 
     if eligible_for_certificate:
         user_is_eligible = 'Y'

@@ -753,6 +753,7 @@ def upload_grades_csv(_xmodule_instance_args, _entry_id, course_id, _task_input,
                 student,
                 course_id,
                 gradeset['grade'],
+                gradeset['pass'],
                 student.id in whitelisted_user_ids
             )
 
