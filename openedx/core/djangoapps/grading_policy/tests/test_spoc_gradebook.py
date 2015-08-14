@@ -14,15 +14,13 @@ from capa.tests.response_xml_factory import StringResponseXMLFactory
 from courseware.tests.factories import StudentModuleFactory
 from xmodule.modulestore.django import modulestore
 
-FEATURES_WITH_CUSTOM_GRADING = settings.FEATURES.copy()
-FEATURES_WITH_CUSTOM_GRADING['ENABLE_CUSTOM_GRADING'] = True
 USER_COUNT = 11
 
 
 @unittest.skipIf(settings._SYSTEM == 'cms', 'Test for lms')  # pylint: disable=protected-access
 @attr('shard_1')
 @override_settings(
-    FEATURES=FEATURES_WITH_CUSTOM_GRADING, ASSIGNMENT_GRADER='WeightedAssignmentFormatGrader'
+    GRADING_TYPE='vertical', ASSIGNMENT_GRADER='WeightedAssignmentFormatGrader'
 )
 class TestGradebookVertical(ModuleStoreTestCase):
     """
@@ -109,6 +107,7 @@ class TestLetterCutoffPolicy(TestGradebookVertical):
                 "min_count": 1,
                 "drop_count": 0,
                 "short_label": "HW",
+                "passing_grade": 0,
                 "weight": 1
             },
         ],
