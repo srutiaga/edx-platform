@@ -179,13 +179,13 @@ class GraderTest(unittest.TestCase):
         }
         for section in graded['grade_breakdown']:
             self.assertEqual(
-                section['pass'], expected[section['category']],
+                section['is_passed'], expected[section['category']],
                 '{category}: {value} != {expected}'.format(
-                    category=section['category'], value=section['pass'], expected=expected[section['category']]
+                    category=section['category'], value=section['is_passed'], expected=expected[section['category']]
                 )
             )
         # Should be False, because one of the sections is not passed.
-        self.assertEqual(graded['pass'], False)
+        self.assertEqual(graded['sections_passed'], False)
 
         graded = passing_grade_grader.grade(self.test_gradesheet)
         self.assertAlmostEqual(graded['percent'], 0.5106547619047619)
@@ -199,13 +199,13 @@ class GraderTest(unittest.TestCase):
         }
         for section in graded['grade_breakdown']:
             self.assertEqual(
-                section['pass'], expected[section['category']],
+                section['is_passed'], expected[section['category']],
                 '{category}: {value} != {expected}'.format(
-                    category=section['category'], value=section['pass'], expected=expected[section['category']]
+                    category=section['category'], value=section['is_passed'], expected=expected[section['category']]
                 )
             )
         # Should be True, because all the sections are passed.
-        self.assertEqual(graded['pass'], True)
+        self.assertEqual(graded['sections_passed'], True)
 
         for graded in [weighted_grader.grade(self.empty_gradesheet),
                        weighted_grader.grade(self.incomplete_gradesheet),

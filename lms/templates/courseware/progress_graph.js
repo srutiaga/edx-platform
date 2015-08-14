@@ -139,7 +139,7 @@ $(function () {
   var colors = ['#f3f3f3', '#e9e9e9', '#ddd'];
   var markings = [];
 
-  %if grade_summary['pass']:
+  %if grade_summary['sections_passed']:
     for(var i=1; i<ascending_grades.length-1; i++) // Skip the i=0 marking, which starts from 0%
       markings.push({yaxis: {from: ascending_grades[i], to: ascending_grades[i+1]}, color: colors[(i-1) % colors.length]});
   %else:
