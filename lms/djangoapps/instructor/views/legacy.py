@@ -1146,7 +1146,7 @@ def dump_grading_context(course):
     gcontext = course.grading_context
     msg += "graded sections:\n"
 
-    msg += '%s\n' % gcontext['graded_sections'].keys()
+    msg += '[' + ', '.join(map(unicode, gcontext['graded_sections'])) + ']\n'
     for (gsections, gsvals) in gcontext['graded_sections'].items():
         msg += "--> Section %s:\n" % (gsections)
         for sec in gsvals:
