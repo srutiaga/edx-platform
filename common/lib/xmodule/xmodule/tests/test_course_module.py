@@ -31,6 +31,9 @@ class CourseFieldsTestCase(unittest.TestCase):
             datetime(2030, 1, 1, tzinfo=UTC())
         )
 
+    def test_default_show_location(self):
+        self.assertEqual(xmodule.course_module.CourseFields.show_location.default, False)
+
 
 class DummySystem(ImportSystem):
     @patch('xmodule.modulestore.xml.OSFS', lambda dir: MemoryFS())

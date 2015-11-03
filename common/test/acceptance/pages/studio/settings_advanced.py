@@ -194,6 +194,7 @@ class AdvancedSettingsPage(CoursePage):
             'showanswer',
             'show_calculator',
             'show_chat',
+            'show_location',
             'show_reset_button',
             'static_asset_path',
             'text_customization',
