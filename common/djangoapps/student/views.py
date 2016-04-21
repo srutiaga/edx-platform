@@ -48,6 +48,7 @@ from edxmako.shortcuts import render_to_response, render_to_string
 from mako.exceptions import TopLevelLookupException
 
 from course_modes.models import CourseMode
+from courseware.models import StudentModule
 from shoppingcart.api import order_history
 from student.models import (
     Registration, UserProfile, PendingNameChange,
@@ -63,8 +64,9 @@ from dark_lang.models import DarkLangConfig
 
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.locations import SlashSeparatedCourseKey, Location
 from opaque_keys.edx.locator import CourseLocator
+from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore import ModuleStoreEnum
 
 from collections import namedtuple
@@ -2297,3 +2299,79 @@ def change_email_settings(request):
         track.views.server_track(request, "change-email-settings", {"receive_emails": "no", "course": course_id}, page='dashboard')
 
     return JsonResponse({"success": True})
+
+
+@login_required
+@ensure_csrf_cookie
+def analytics(request):
+    user = request.user
+
+    if not user.is_staff:
+        raise Http404
+
+    def get_questions(course):
+        questions = []
+        for section in course.get_children():
+            for subsection in section.get_children():
+                for unit in subsection.get_children():
+                    for xblock in unit.get_children():
+                        if xblock.location.block_type == 'problem':
+                            questions.append(xblock)
+
+        return questions
+
+    data = request.GET
+    course_key = data.get('course')
+    gender = data.get('gender') or None
+    age_range = data.get('age_range') or None
+    level_of_education = data.get('level_of_education') or None
+    question_key = data.get('question')
+    percentage_correct_answers = None
+    course = None
+    questions = []
+    all_students =[]
+
+    if course_key:
+        course_key = CourseKey.from_string(course_key)
+        course = modulestore().get_course(course_key)
+
+        if request.is_ajax():
+            return JsonResponse({"questions": [[str(q.location), q.display_name]for q in get_questions(course)]})
+
+    if course_key and question_key:
+        percentage_correct_answers = 0
+        question_key = Location.from_deprecated_string(question_key)
+        all_students = CourseEnrollment.objects.filter(course_id=course_key)
+
+        if gender:
+            all_students = all_students.filter(user__profile__gender=gender)
+        if age_range:
+            all_students = all_students.filter(user__profile__age_range=age_range)
+        if level_of_education:
+            all_students = all_students.filter(user__profile__level_of_education=level_of_education)
+        if all_students:
+            students_correct_answer = StudentModule.objects.filter(student__in=list(all_students.values_list('user_id', flat=True)),
+                                                                   module_state_key=question_key,
+                                                                   grade__gt=0)
+            percentage_correct_answers = students_correct_answer.count() * 100 / len(all_students)
+
+    courses = modulestore().get_courses()
+
+    if course:
+        questions = get_questions(course)
+    elif courses:
+        questions = get_questions(courses[0])
+
+    context = {
+        'courses': courses,
+        'questions': questions,
+        'percentage_correct_answers': percentage_correct_answers,
+        'selected_course': course_key,
+        'selected_question': question_key,
+        'selected_gender': gender,
+        'selected_age_range': age_range,
+        'selected_level_of_education': level_of_education,
+        'enrollment': len(all_students),
+    }
+
+    return render_to_response('analytics.html', context)

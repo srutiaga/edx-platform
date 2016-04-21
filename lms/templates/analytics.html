@@ -1,0 +1,113 @@
+<%! from django.utils.translation import ugettext as _ %>
+<%! from student.models import UserProfile %>
+<%! from django.core.urlresolvers import reverse %>
+
+<%inherit file="main.html" />
+<%namespace name='static' file='static_content.html'/>
+
+<%block name="pagetitle">${_("Analytics")}</%block>
+<%block name="bodyclass">view-dashboard is-authenticated</%block>
+<%block name="nav_skip">#my-courses</%block>
+
+<%block name="js_extra">
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var course= $('select#course');
+      var question = $('select#question');
+      course.change(function(ev){
+        question.empty();
+        $.ajax({
+          url: '${reverse('analytics')}',
+          type: "GET",
+          data: {course: $(ev.target).val()},
+          success: function(response){
+            var questions = response.questions;
+            var optionalHtml = '';
+            for (i = 0, len = questions.length; i < len; i++) {
+              optionalHtml += '<option value="' + questions[i][0] + '">' + questions[i][1] + '</option>';
+            }
+            question.html(optionalHtml);
+          }
+        })
+      })
+    });
+  </script>
+</%block>
+
+<section class="container dashboard" id="dashboard-main">
+  <section class="my-courses" id="my-courses">
+    <header>
+      <h2>${_("Analytics")}</h2>
+    </header>
+    <form id="analytics-form" method="get" action="">
+      <ol class="list-input" style="list-style-type: none;">
+
+        <li class="field-group field-gender">
+          <div class="field select" id="field-gender">
+            <label for="gender">${_("Gender")}</label>
+            <select id="gender" name="gender">
+              <option value="">--</option>
+              %for code, gender in UserProfile.GENDER_CHOICES:
+              <option ${'selected' if selected_gender == code else '' } value="${code}">${_(gender)}</option>
+              %endfor
+            </select>
+          </div>
+        </li>
+
+        <li class="field-group field-yob">
+          <div class="field select" id="field-yob">
+            <label for="yob">${_("Age Range")}</label>
+            <select id="yob" name="age_range">
+              <option value="">--</option>
+              %for code, age_range in UserProfile.AGE_RANGE_CHOICES:
+              <option ${'selected' if selected_age_range == code else ''} value="${code}">${_(age_range)}</option>
+              %endfor
+            </select>
+          </div>
+        </li>
+
+        <li class="field-group field-education-level">
+          <div class="field select" id="field-education-level">
+            <label for="education-level">${_("Education")}</label>
+            <select id="education-level" name="level_of_education">
+              <option value="">--</option>
+              %for code, ed_level in UserProfile.LEVEL_OF_EDUCATION_CHOICES:
+              <option ${'selected' if selected_level_of_education == code else ''} value="${code}">${_(ed_level)}</option>
+              %endfor
+            </select>
+          </div>
+        </li>
+
+        <li class="field-group field-course">
+          <div class="field select" id="field-course">
+            <label for="course">${_("Course")}</label>
+            <select id="course" name="course">
+              %for course in courses:
+              <option ${'selected' if selected_course == course.location.course_key else ''} value="${course.location.course_key}">${course.display_name}</option>
+              %endfor
+            </select>
+          </div>
+        </li>
+
+        <li class="field-group field-question">
+          <div class="field select" id="field-question">
+            <label for="question">${_("Question")}</label>
+            <select id="question" name="question">
+              %for question in questions:
+              <option ${'selected' if selected_question == question.location else ''} value="${question.location}">${question.display_name}</option>
+              %endfor
+            </select>
+          </div>
+        </li>
+
+      </ol>
+      <input type="submit" value="${_("Submit")}" class="action" />
+    </form>
+
+    %if percentage_correct_answers is not None:
+      <p>${_("Enrollment")}: ${enrollment}</p>
+      <p>${_("Correct answers")}: ${percentage_correct_answers}%</p>
+    %endif
+
+  </section>
+</section>
