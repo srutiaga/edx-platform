@@ -222,12 +222,6 @@ class CourseFixture(XBlockContainerFixture):
         """
         self._configure_course()
 
-    def configure_course_advanced_settings(self):
-        """
-        Configure Course Advanced Settings, take new course advanced settings from self._advanced_settings dict object
-        """
-        self._add_advanced_settings()
-
     @property
     def course_outline(self):
         """
