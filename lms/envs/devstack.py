@@ -52,7 +52,7 @@ ANALYTICS_DASHBOARD_URL = None
 
 ################################ DEBUG TOOLBAR ################################
 
-INSTALLED_APPS += ('debug_toolbar', 'debug_toolbar_mongo')
+INSTALLED_APPS += ('debug_toolbar', 'debug_toolbar_mongo', 'open_edx_api_extension', )
 MIDDLEWARE_CLASSES += (
     'django_comment_client.utils.QueryCountDebugMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',

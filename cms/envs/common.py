@@ -1118,7 +1118,7 @@ DEPRECATED_BLOCK_TYPES = ['peergrading', 'combinedopenended']
 
 #### PROCTORING CONFIGURATION DEFAULTS
 
-PROCTORING_BACKEND_PROVIDER = {
+PROCTORING_BACKEND_PROVIDERS = {
     'class': 'edx_proctoring.backends.null.NullBackendProvider',
     'options': {},
 }

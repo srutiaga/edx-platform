@@ -712,7 +712,7 @@ class TestProctoringRendering(ModuleStoreTestCase):
         Set up the initial mongo datastores
         """
         super(TestProctoringRendering, self).setUp()
-        self.course_key = ToyCourseFactory.create().id
+        self.course_key = ToyCourseFactory.create(proctoring_service='TEST_PROCTOR').id
         self.chapter = 'Overview'
         chapter_url = '%s/%s/%s' % ('/courses', self.course_key, self.chapter)
         factory = RequestFactory()
